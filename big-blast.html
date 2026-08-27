@@ -4081,11 +4081,57 @@
   });
   document.getElementById('tutorialSkipBtn').addEventListener('click', closeTutorial);
 
+  // ---------- Celebration banner queue ----------
+  // A single placement can resolve into several celebrations at once: a
+  // perfect clear that also crosses a score milestone, a multi-clear whose
+  // points cross two milestones in one go. They all render at the same fixed
+  // position (top:32%), so without a queue they stack on top of each other and
+  // none of them are readable.
+  //
+  // Each entry owns its whole beat — banner, confetti, sound, haptics — so the
+  // audio and the text never drift apart. Higher priority goes first, and a
+  // backlog shortens the hold so a big turn doesn't become a parade the player
+  // has to sit through.
+  const bannerQueue = [];
+  let bannerBusy = false;
+  let bannerTimer = null;
+  const BANNER_GAP = 140;      // breath between banners
+  const BANNER_MAX_QUEUED = 3; // beyond this, the least important are dropped
+
+  function enqueueBanner(priority, hold, run){
+    bannerQueue.push({priority, hold, run});
+    // Stable sort by priority so equal-priority banners keep insertion order
+    // (two milestones crossed in one placement should read low-to-high).
+    bannerQueue.sort((a,b)=>b.priority-a.priority);
+    if(bannerQueue.length > BANNER_MAX_QUEUED) bannerQueue.length = BANNER_MAX_QUEUED;
+    if(!bannerBusy) runNextBanner();
+  }
+  function runNextBanner(){
+    bannerTimer = null;
+    const job = bannerQueue.shift();
+    if(!job){ bannerBusy = false; return; }
+    bannerBusy = true;
+    job.run();
+    const hold = bannerQueue.length ? Math.min(job.hold, 1150) : job.hold;
+    bannerTimer = setTimeout(runNextBanner, hold + BANNER_GAP);
+  }
+  // Cancels the pending advance as well as emptying the queue — otherwise a
+  // timer left over from the previous game fires into the new one and advances
+  // the queue a second time, running two banners at once again.
+  function resetBannerQueue(){
+    if(bannerTimer){ clearTimeout(bannerTimer); bannerTimer = null; }
+    bannerQueue.length = 0;
+    bannerBusy = false;
+  }
+
   // ---------- Milestone celebrations ----------
   const MILESTONES = [1000,5000,10000,25000,50000,100000,200000,350000,500000];
   let triggeredMilestonesThisGame = new Set();
   function sfxMilestone(){ tone(700,0.12,'sine',0.12); setTimeout(()=>tone(900,0.12,'sine',0.12),100); setTimeout(()=>tone(1200,0.18,'sine',0.12),200); }
   function spawnMilestoneCelebration(value){
+    enqueueBanner(1, 2100, ()=>runMilestoneCelebration(value));
+  }
+  function runMilestoneCelebration(value){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
     banner.textContent = `${value.toLocaleString()} points`;
@@ -4135,6 +4181,9 @@
     return 'Mega clear';
   }
   function spawnMultiClearCelebration(n, scoreGained){
+    enqueueBanner(2, 1900, ()=>runMultiClearCelebration(n, scoreGained));
+  }
+  function runMultiClearCelebration(n, scoreGained){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
     banner.textContent = `${multiClearLabel(n)} +${scoreGained.toLocaleString()}`;
@@ -4165,6 +4214,9 @@
   }
 
   function spawnPerfectClearCelebration(bonus, multiplier){
+    enqueueBanner(3, 2600, ()=>runPerfectClearCelebration(bonus, multiplier));
+  }
+  function runPerfectClearCelebration(bonus, multiplier){
     const flash = document.createElement('div');
     flash.className = 'fullscreenFlash';
     document.body.appendChild(flash);
@@ -6500,6 +6552,7 @@
     sessionLines = 0; sessionBestCombo = 0; sessionPieces = 0; sessionGems = 0;
     undoSnapshot = null; undoUsedThisGame = false; nextPeekPiece = null;
     triggeredMilestonesThisGame = new Set();
+    resetBannerQueue();
     bumpLifetimeStat('gamesPlayed', 1);
     scoreEl.textContent = 0; comboEl.textContent = 0;
     updateComboGlow(0);
