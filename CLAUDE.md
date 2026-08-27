@@ -98,29 +98,63 @@ instead. Several "failures" have been the harness, not the game.
 
 ## Design system (established, follow it)
 
-- **Palette:** neutral slate (`--bg2:#0d1117`, `--panel:#212a38`,
-  `--line:#323d4d`), single amber accent `--accent:#f0913a`. Deliberately not
-  purple — purple gradients read as AI-generated.
-- **Principle:** the UI recedes so the game blocks are the only saturated
-  thing on screen. PLAY is the only solid-amber element.
-- **Type scale:** `--fs-xs` through `--fs-5xl`. No raw rem font sizes.
-- **Radii:** `--r-sm/md/lg` only.
+A prior pass over-corrected against "looks AI-generated" by stripping color,
+gradients, emoji and exclamation marks down to almost nothing, and it made the
+game read as a flat SaaS dashboard instead of a puzzle game — bland, not
+tasteful. Real hits in this exact genre (Block Blast!, Woodoku, Candy Crush)
+are colorful, glossy, and loud at the right moments. The actual AI tell was
+never "color" or "excitement" — it's **decoration with no reason behind it**:
+an arbitrary rainbow gradient on a settings toggle, emoji standing in for an
+icon nobody drew, exclamation marks on mundane copy. Purposeful color and
+excitement are the genre norm and are back.
+
+- **Palette:** slate base (`--bg2:#0d1117`, `--panel:#212a38`), amber as the
+  one **brand/CTA** color (`--accent:#f0913a` — Play, primary actions). But
+  `--gold`, `--pink`, `--cyan`, `--green`, `--red` are genuine distinct hues
+  used *with meaning*: gold/pink for celebration text, cyan for currency,
+  green for "on"/success, red for danger. Don't collapse these back to one
+  color — that's the mistake that made everything look flat last time.
+- **Gradients:** fine, even encouraged, in two specific forms — (1) a lighter
+  tint of an element's *own* color for a glossy highlight (the classic "candy
+  button" sheen — see `.btn`'s white-to-transparent overlay), and (2) a
+  same-purpose multi-hue sweep on *celebration* text specifically (milestone
+  banner, perfect-clear, rank-up, legendary/godlike streak titles all use a
+  gold→pink→cyan text-clip gradient, some animated). What to still avoid: an
+  arbitrary multi-hue gradient on ordinary chrome (a settings row, a card
+  background) that has no reason to be there.
+- **Radii:** `--r-sm:9px / --r-md:16px / --r-lg:22px / --r-pill`. Chunkier
+  than a typical UI kit on purpose — matches the genre.
+- **Font:** `--font-display` (`ui-rounded` → Apple's SF Rounded, zero network,
+  graceful fallback to system-ui elsewhere) on headline elements — the
+  wordmark, `#score`, modal `h2`, streak titles, rank-up title. Body copy
+  stays on the plain system stack for readability.
 - **Icons:** inline SVG via `ICON_SVGS` + `renderIcons()`, 39 icons in one
-  24×24 stroke style. Emoji render as different artwork per device, so chrome
-  uses SVG — this is now actually enforced, not just aspirational. Emoji in
-  *game content* (falling 🎃🦇, block glyphs, the rank-up rain) is fine and
-  intentional; that's the only place any emoji survive.
+  24×24 stroke style, used for *functional* chrome (nav, settings, mode
+  picker). Emoji are back for *flavor and celebration* — theme names, streak
+  titles, milestone/perfect-clear banners, combo-lost, tutorial slides, plus
+  all falling/ambient game content (🎃🦇) and the rank-up rain. The line: an
+  icon a player *acts on* is SVG; a moment being *celebrated* can be emoji.
   `ICON_SVGS` lives at the **top** of the script IIFE because it's a `const`
   and start-up code calls `iconMarkup()` — moving it down reintroduces a
   temporal-dead-zone crash that hangs the splash screen.
   `iconMarkup()` output carries its own `.icoSvg` sizing class, so it can be
   dropped into any container; an unclassed inline `<svg>` blows up to 300×150.
-- Solid fills and 1px borders. No glassmorphism, no decorative glow.
-- **Motion:** a press is a single settle, not a wobble. Shake is reserved for
-  where the shake *is* the information (board shake on clear, tension effect).
-- **Copy:** no exclamation marks, no `— em-dash explainer` clauses, no
-  staccato three-word taglines, sentence case for labels. Those are the
-  loudest tells that a machine wrote the interface.
+- **Motion:** a button press is a single settle, not a wobble — that part of
+  the earlier calm-down pass was correct and stays. Shake is reserved for
+  where the shake *is* the information (board shake on clear, tension effect,
+  the combo-risk counter shaking as a miss-streak climbs).
+- **Copy:** exclamation marks and a little shout are earned on genuine
+  celebration/warning moments (a streak title, "RANK UP!", "Combo at risk!")
+  and wrong on mundane chrome (settings labels, shop descriptions stay
+  sentence-case, no exclamation). The tell was never punctuation — it was
+  using celebration-register language on things that aren't celebrations.
+- **First-time explainers:** any new visual language a first-time player
+  hasn't seen before (a shake, a color shift, an escalating effect) gets a
+  one-time toast the first time it happens, gated by its own
+  `localStorage.getItem('blastgrid_seen_*')` flag — see `showOnceToast()`.
+  Board tension and combo-risk both use this; it's the pattern to follow for
+  the next one, rather than assuming a first-time player will infer meaning
+  from an animation alone.
 
 ## Ergonomics
 

@@ -13,23 +13,37 @@
     --fs-xs:0.625rem; --fs-sm:0.75rem; --fs-base:0.875rem; --fs-md:1rem;
     --fs-lg:1.125rem; --fs-xl:1.375rem; --fs-2xl:1.75rem; --fs-3xl:2.25rem;
     --fs-4xl:3rem; --fs-5xl:3.5rem;
-    /* ---- Radius scale ---- */
-    --r-sm:6px; --r-md:10px; --r-lg:14px;
-    /* Neutral slate rather than purple, and ONE accent rather than a
-       gold/pink/cyan rainbow. The board pieces are the only thing on screen
-       that should be saturated — chrome that competes with them is what makes
-       an interface feel noisy and generic. */
+    /* ---- Radius scale ----
+       Chunkier than a typical dashboard on purpose — real block-puzzle hits
+       (Block Blast, Woodoku, Candy Crush) run rounder corners than most UI
+       kits default to; sharp-ish corners are one of the things that reads as
+       "generated," not "played." */
+    --r-sm:9px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+    /* Slate rather than purple as the BASE, but a real accent palette on top —
+       amber stays the one CTA/brand color (Play, primary actions), while gold,
+       pink, cyan, green and red are genuine distinct hues used with intent:
+       gold/pink for celebration, cyan for currency, green for "on"/success,
+       red for danger. What actually reads as AI-generated isn't color, it's
+       color with no reason behind it — a random gradient on a settings row,
+       an emoji standing in for an icon nobody drew. Same-hue gloss/shadow
+       (a lighter tint of the button's own color for shine) is the real-game
+       convention and is fine everywhere; an arbitrary multi-hue gradient
+       divorced from meaning is the thing to avoid. */
     --bg1:#1d2430; --bg2:#0d1117; --panel:#212a38; --panel2:#1a222e;
     --line:#323d4d;
-    --accent:#f0913a; --accent-dim:#c26f26;
-    --gold:#f0913a; --pink:#f0913a; --cyan:#5aa9e6;
-    --green:#4ba36b; --red:#d1584f;
+    --accent:#f0913a; --accent-dim:#c26f26; --accent-glow:#ffb066;
+    --gold:#ffd35c; --pink:#ff4f93; --cyan:#4fd8ff;
+    --green:#3ddc84; --red:#ff5c5c;
     --text:#e8edf4; --muted:#8d99a8;
+    --font-display: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
     margin:0; padding:0; height:100%;
-    background:var(--bg2);
+    /* A flat fill reads like a form background. Real puzzle-game boards sit
+       in front of a soft radial glow instead — same navy hue family as the
+       flat colour it replaces, so it stays calm, just no longer dead flat. */
+    background:radial-gradient(120% 85% at 50% -8%, #1c2536 0%, var(--bg2) 55%, #080b0f 100%);
     font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color:var(--text); overflow:hidden; touch-action:none; overscroll-behavior:none;
     transition:background 0.4s ease;
@@ -39,17 +53,21 @@
 
   button{ font-family:inherit; border:none; cursor:pointer; }
   .btn{
-    --pressY:3px;
+    --pressY:4px;
     display:inline-flex; align-items:center; justify-content:center; gap:9px;
-    background:var(--accent); color:#1a1208; font-weight:700;
+    /* Gloss overlay is a lighter TINT of the button's own colour, not a
+       different hue — the real "candy button" technique: a highlight layer on
+       top of a flat base, same family as the base underneath it. */
+    background:linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 48%), var(--accent);
+    color:#1a1208; font-weight:700;
     padding:14px 30px; border-radius:var(--r-md); font-size:var(--fs-md); letter-spacing:0.2px;
-    box-shadow:0 3px 0 var(--accent-dim);
+    box-shadow:0 4px 0 var(--accent-dim), 0 7px 16px -4px rgba(240,145,58,0.5);
     transition:transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
   }
   /* Icons inside buttons ride slightly under the cap height so they optically
      centre against uppercase labels rather than sitting a hair high. */
   .btn .ico{ font-size:1.15em; margin-top:-0.05em; flex-shrink:0; }
-  .btn:active{ box-shadow:0 1px 0 var(--accent-dim); transform:translateY(2px); }
+  .btn:active{ box-shadow:0 1px 0 var(--accent-dim); transform:translateY(3px); }
   .btn.pressShake{ animation:btnPressShake 0.32s ease; }
   /* A press is a press, not an earthquake. This used to wobble laterally four
      times over 0.32s on every single tap; now it just travels down and settles,
@@ -60,8 +78,12 @@
     38%{ transform:translateY(var(--pressY)); }
     100%{ transform:translateY(0); }
   }
-  .btn.secondary{ --pressY:2px; background:var(--panel); color:var(--text); box-shadow:0 3px 0 #131a24; }
-  .btn.secondary:active{ box-shadow:0 1px 0 #131a24; transform:translateY(2px); }
+  .btn.secondary{
+    --pressY:3px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 48%), var(--panel);
+    color:var(--text); box-shadow:0 4px 0 #131a24;
+  }
+  .btn.secondary:active{ box-shadow:0 1px 0 #131a24; transform:translateY(3px); }
   .btn.small{ padding:9px 18px; font-size:var(--fs-base); }
   .btn.big{ padding:17px 34px; font-size:var(--fs-lg); }
   .btn:disabled{ opacity:0.4; }
@@ -124,10 +146,13 @@
   .badgeDot.show{ display:block; }
 
   .gemPill{
-    display:flex; align-items:center; gap:4px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; gap:4px; background:var(--panel); border:1px solid rgba(79,216,255,0.35);
     border-radius:var(--r-md); padding:0 12px; height:34px; font-weight:800; color:var(--text); font-size:var(--fs-base);
     flex-shrink:0; white-space:nowrap;
   }
+  /* Currency reads as cyan everywhere it appears, menu chip included — one
+     consistent colour-coded meaning instead of a neutral counter. */
+  .gemPill .ico{ color:var(--cyan); }
   .gemPill.bump{ animation:gemPillBump 0.42s cubic-bezier(.34,1.4,.64,1); }
   /* Was a 1.55x jump with a cyan halo. The design system says solid fills and
      no decorative glow, and a counter ticking up does not need to be the
@@ -198,7 +223,7 @@
        centre; the matching indent pushes it back. */
     letter-spacing:0.60em; text-indent:0.60em;
   }
-  #menuScreen h1 .wordBot{ font-size:var(--fs-5xl); font-weight:800; letter-spacing:-0.035em; }
+  #menuScreen h1 .wordBot{ font-family:var(--font-display); font-size:var(--fs-5xl); font-weight:800; letter-spacing:-0.035em; text-shadow:0 3px 0 rgba(0,0,0,0.28); }
   #menuScreen h1 .accentWord{ color:var(--accent); }
   .highScoreCard{
     background:var(--panel); border:1px solid var(--line);
@@ -352,6 +377,7 @@
     50%{ transform:translateY(-6px); }
   }
   .rankUpTitle{
+    font-family:var(--font-display);
     font-size:var(--fs-2xl); font-weight:900; letter-spacing:3px; margin:4px 0 6px 0;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan),var(--gold));
     background-size:300% auto;
@@ -465,6 +491,17 @@
     transition:transform 0.12s ease;
   }
   .modeCard .ico{ font-size:var(--fs-xl); color:var(--muted); }
+  /* Each mode gets its own colour at rest, not just when selected — six
+     identical grey icons in a row is the flattest-looking part of the whole
+     picker, and the modes are genuinely different experiences. :not(.active)
+     keeps this from fighting the "selected = accent" rule below, which needs
+     to win regardless of the mode's own colour. */
+  .modeCard:not(.active)[data-mode="classic"] .ico{ color:var(--accent); }
+  .modeCard:not(.active)[data-mode="timeattack"] .ico{ color:var(--cyan); }
+  .modeCard:not(.active)[data-mode="zen"] .ico{ color:var(--green); }
+  .modeCard:not(.active)[data-mode="daily"] .ico{ color:var(--gold); }
+  .modeCard:not(.active)[data-mode="pure"] .ico{ color:var(--pink); }
+  .modeCard:not(.active)[data-mode="duel"] .ico{ color:var(--red); }
   .modeCard span:not(.ico){ font-size:var(--fs-xs); font-weight:800; color:var(--text); letter-spacing:0.3px; }
   /* Solid tint + a single accent border. The old rule used a gold-to-pink
      gradient, which is the exact decorative-gradient look the palette was
@@ -546,7 +583,7 @@
   .duelResultLabel{ font-size:var(--fs-sm); font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
   .duelResultScore{ font-size:var(--fs-2xl); font-weight:900; color:var(--gold); margin-top:4px; }
   #score{
-    flex:1; min-width:0; text-align:center;
+    flex:1; min-width:0; text-align:center; font-family:var(--font-display);
     font-size:var(--fs-4xl); font-weight:900; line-height:1; cursor:pointer;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
     -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -588,7 +625,7 @@
   }
 
   .streakTitle{
-    width:100%; text-align:center; font-weight:900; font-size:var(--fs-base);
+    width:100%; text-align:center; font-family:var(--font-display); font-weight:900; font-size:var(--fs-base);
     letter-spacing:1px; margin-top:2px;
   }
   .streakTitle.streakTitlePop{ animation:streakTitlePop 0.4s cubic-bezier(.2,1.4,.4,1); }
@@ -1060,7 +1097,7 @@
     0%{ opacity:1; transform:translate(0,0) scale(1); }
     100%{ opacity:0; transform:translate(var(--originDX,0px), var(--originDY,0px)) scale(0.1); }
   }
-  .modalCard h2{ margin:6px 0 10px 0; font-size:var(--fs-xl); letter-spacing:0.3px; text-shadow:0 2px 12px rgba(0,0,0,0.3); }
+  .modalCard h2{ margin:6px 0 10px 0; font-family:var(--font-display); font-size:var(--fs-xl); font-weight:800; letter-spacing:0.3px; text-shadow:0 2px 12px rgba(0,0,0,0.3); }
   .modalCard p{ margin:0 0 18px 0; color:var(--muted); font-size:var(--fs-base); line-height:1.4; }
   .modalCard .modalScore{ font-size:var(--fs-3xl); font-weight:800; color:var(--gold); margin-bottom:4px; }
   .modalCard .modalButtons{ display:flex; flex-direction:column; gap:10px; }
@@ -1076,10 +1113,10 @@
   .switch input{ opacity:0; width:0; height:0; }
   .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.15); border-radius:var(--r-lg); transition:0.2s; }
   .slider::before{ content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:white; border-radius:50%; transition:0.2s; }
-  /* Amber, not green. A column of saturated green toggles was the loudest
-     thing in the settings panel, and the palette is meant to hold exactly one
-     accent so the board keeps the only strong colour on screen. */
-  input:checked + .slider{ background:var(--accent); }
+  /* Green means "on" in virtually every app a player has ever used — fighting
+     that convention for the sake of a one-accent rule makes the settings
+     screen harder to scan, not more tasteful. */
+  input:checked + .slider{ background:var(--green); }
   input:checked + .slider::before{ transform:translateX(20px); }
 
   .adSpinner{ width:44px; height:44px; border-radius:50%; border:4px solid rgba(255,255,255,0.15); border-top-color:var(--gold); margin:0 auto 16px auto; animation:spin 0.8s linear infinite; }
@@ -1395,7 +1432,9 @@
       linear-gradient(rgba(255,70,15,var(--tensionEdgeAlpha,0)), transparent 26%),
       linear-gradient(to top, rgba(255,70,15,var(--tensionEdgeAlpha,0)), transparent 26%);
   }
-  #tensionWarningToast{
+  /* Shared by every one-time "here's what that means" explainer toast —
+     tension warning and combo-risk warning both use this. */
+  .infoToast{
     position:fixed; top:14px; left:50%; z-index:1500; max-width:87%;
     background:rgba(18,10,32,0.96); border-radius:var(--r-lg); padding:11px 16px;
     box-shadow:0 8px 22px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,170,70,0.35);
@@ -1404,7 +1443,7 @@
     transform:translate(-50%,-14px);
     transition:opacity 0.35s ease, transform 0.35s ease;
   }
-  #tensionWarningToast.show{ opacity:1; transform:translate(-50%,0); }
+  .infoToast.show{ opacity:1; transform:translate(-50%,0); }
   #tensionOverlay.pulse{ animation:tensionPulse var(--tensionPulseDur,3s) ease-in-out infinite; }
   @keyframes tensionPulse{
     0%,100%{ filter:brightness(1) saturate(1); }
@@ -1664,7 +1703,8 @@
 
   <div id="gameScreen">
     <div id="tensionOverlay"></div>
-    <div id="tensionWarningToast">Running out of room. Clear a line to ease the pressure.</div>
+    <div id="tensionWarningToast" class="infoToast">😬 Board's getting risky — the screen tenses up as danger rises. Clear a line to ease it!</div>
+    <div id="comboRiskWarningToast" class="infoToast">⚠️ That shake means your combo's at risk — a few more misses and it breaks. Clear a line to keep it safe!</div>
     <div id="topBar">
       <button class="iconBtn" id="settingsBtnGame"><span class="ico" data-icon="settings"></span></button>
       <button class="iconBtn" id="homeBtn"><span class="ico" data-icon="home"></span></button>
@@ -1739,7 +1779,7 @@
 
 <div class="overlay" id="streakReviveOverlay">
   <div class="modalCard">
-    <h2>Combo at risk</h2>
+    <h2>⚠️ Combo at risk!</h2>
     <p>Continuing ends your <span id="brokenStreakNum">0</span>x combo. You can revive with an ad once per game.</p>
     <div class="modalButtons">
       <button class="btn big" id="watchAdStreakBtn"><span class="ico" data-icon="video"></span>Watch ad, keep combo</button>
@@ -1770,9 +1810,9 @@
 
 <div class="overlay" id="gameOverOverlay">
   <div class="modalCard">
-    <h2 id="gameOverTitle">Board full</h2>
+    <h2 id="gameOverTitle">Board full!</h2>
     <div class="modalScore" id="finalScoreDisplay">0</div>
-    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-bottom:8px;">New high score</div>
+    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-bottom:8px;">🏆 New high score!</div>
     <div class="recapGrid">
       <div class="recapItem"><div class="recapVal" id="recapLines">0</div><div class="recapLbl">Lines</div></div>
       <div class="recapItem"><div class="recapVal" id="recapCombo">0</div><div class="recapLbl">Best Combo</div></div>
@@ -2076,7 +2116,7 @@
       <div class="rankUpArrow">→</div>
       <div class="rankUpRingWrap"><div class="rankUpRings"></div><div class="rankUpBadgeBig" id="rankUpBadgeBig"></div></div>
     </div>
-    <h2 class="rankUpTitle">RANK UP</h2>
+    <h2 class="rankUpTitle">RANK UP!</h2>
     <div class="rankUpNewRankName" id="rankUpNewRankName"></div>
     <div class="modalButtons"><button class="btn" id="rankUpContinueBtn">Continue</button></div>
   </div>
@@ -4134,7 +4174,7 @@
   function runMilestoneCelebration(value){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
-    banner.textContent = `${value.toLocaleString()} points`;
+    banner.textContent = `🎉 ${value.toLocaleString()} points! 🎉`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2100);
@@ -4175,10 +4215,10 @@
     return 7; // 5+
   }
   function multiClearLabel(n){
-    if(n===2) return 'Double clear';
-    if(n===3) return 'Triple clear';
-    if(n===4) return 'Quad clear';
-    return 'Mega clear';
+    if(n===2) return '💥 Double clear!';
+    if(n===3) return '🎆 Triple clear!';
+    if(n===4) return '🎇 Quad clear!';
+    return '🌟 Mega clear!';
   }
   function spawnMultiClearCelebration(n, scoreGained){
     enqueueBanner(2, 1900, ()=>runMultiClearCelebration(n, scoreGained));
@@ -4244,7 +4284,7 @@
 
     const banner = document.createElement('div');
     banner.className = 'perfectClearBanner';
-    banner.innerHTML = `<div class="pcTitle">Perfect clear</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
+    banner.innerHTML = `<div class="pcTitle">🌟 Perfect Clear! 🌟</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2600);
@@ -4798,13 +4838,28 @@
   let lastTensionEased = 0;
   let tensionShakeWanted = false;
 
-  function maybeShowTensionWarning(){
-    if(localStorage.getItem('blastgrid_seen_tension_warning')) return;
-    localStorage.setItem('blastgrid_seen_tension_warning', '1');
-    const toast = document.getElementById('tensionWarningToast');
+  // Shared by every "first time you see this, here's what it means" toast.
+  // Each one is gated on its own localStorage flag so it only ever shows
+  // once; the tiny busy check just stops two first-ever explainers (tension
+  // + combo-risk) from landing in the same spot on the same turn.
+  let infoToastBusy = false;
+  function showOnceToast(storageKey, toastId, holdMs){
+    if(localStorage.getItem(storageKey)) return;
+    localStorage.setItem(storageKey, '1');
+    const toast = document.getElementById(toastId);
     if(!toast) return;
-    toast.classList.add('show');
-    setTimeout(()=>toast.classList.remove('show'), 5000);
+    const run = ()=>{
+      infoToastBusy = true;
+      toast.classList.add('show');
+      setTimeout(()=>{ toast.classList.remove('show'); infoToastBusy=false; }, holdMs);
+    };
+    if(infoToastBusy) setTimeout(run, holdMs); else run();
+  }
+  function maybeShowTensionWarning(){
+    showOnceToast('blastgrid_seen_tension_warning', 'tensionWarningToast', 5000);
+  }
+  function maybeShowComboRiskWarning(){
+    showOnceToast('blastgrid_seen_combo_risk_warning', 'comboRiskWarningToast', 5000);
   }
 
   function setTensionShake(wanted){
@@ -5455,9 +5510,11 @@
   function spawnComboLostPopup(lostCombo){
     if(lostCombo < 5) return; // small losses aren't worth interrupting the player over
     const tier = lostCombo>=40 ? 'huge' : lostCombo>=20 ? 'big' : 'medium';
-    const text = tier==='huge' ? `Combo lost, x${lostCombo}`
-      : tier==='big' ? `Combo lost, x${lostCombo}`
-      : `Combo Lost — x${lostCombo}`;
+    // Escalating emoji for the two tiers worth interrupting the player over;
+    // 'medium' stays plain since it's the one that fires most often.
+    const text = tier==='huge' ? `💔💔 Huge combo lost, x${lostCombo}`
+      : tier==='big' ? `💔 Combo lost, x${lostCombo}`
+      : `Combo lost, x${lostCombo}`;
     const el = document.createElement('div');
     el.className = 'comboLostPopup combo-lost-' + tier;
     el.textContent = text;
@@ -5476,12 +5533,16 @@
     }
   }
 
+  // These are the one place in the whole UI that's allowed to shout — a combo
+  // streak is a genuine adrenaline moment, and a shimmering gradient title
+  // with an exclamation mark is the payoff for it. That's different from
+  // slapping "!" on a settings label: this is celebration text, not chrome.
   const STREAK_TITLES = [
-    {min:60, text:'GODLIKE', cls:'streak-godlike'},
-    {min:40, text:'LEGENDARY', cls:'streak-legendary'},
-    {min:25, text:'BLAZING', cls:'streak-blazing'},
-    {min:15, text:'UNSTOPPABLE', cls:'streak-unstoppable'},
-    {min:8,  text:'ON FIRE', cls:'streak-fire'},
+    {min:60, text:'👑 GODLIKE!', cls:'streak-godlike'},
+    {min:40, text:'🌟 LEGENDARY!', cls:'streak-legendary'},
+    {min:25, text:'💥 BLAZING!', cls:'streak-blazing'},
+    {min:15, text:'⚡ UNSTOPPABLE!', cls:'streak-unstoppable'},
+    {min:8,  text:'🔥 ON FIRE!', cls:'streak-fire'},
   ];
   let lastStreakTitleShown = null;
   function updateStreakTitle(comboVal){
@@ -5512,6 +5573,10 @@
    * `streakStatBox.style.opacity = ...` call with one consistent source. */
   function updateComboRiskVisual(streak){
     streakStatBox.className = 'streakStat' + (streak>0 ? ' risk-'+Math.min(streak,4) : '');
+    // First time the combo counter ever starts shaking, explain why —
+    // otherwise the very first miss-streak of a brand new player's first game
+    // just looks like the UI glitching.
+    if(streak>0) maybeShowComboRiskWarning();
   }
 
   function updateComboGlow(comboVal){
@@ -6050,13 +6115,13 @@
           const perfectBonus = 500 * multiplier;
           turnScore += perfectBonus;
           spawnPerfectClearCelebration(perfectBonus, multiplier);
-          msgEl.textContent = `Perfect clear, x${multiplier}`;
+          msgEl.textContent = `✨ Perfect clear, x${multiplier}!`;
           perfectClearAwardedThisRound = true;
         } else if(naturalLines >= 2){
           spawnMultiClearCelebration(naturalLines, turnScore);
           msgEl.textContent = `${multiClearLabel(naturalLines)} +${turnScore.toLocaleString()}`;
         } else if(!piece.isBomb && !piece.isLaser){
-          msgEl.textContent = combo>1 ? `Combo x${multiplier}, +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared`;
+          msgEl.textContent = combo>1 ? `🔥 Combo x${multiplier}! +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared`;
           haptic(combo>=3 ? [20,30,20,30,20] : [20,30,20]);
         }
 
