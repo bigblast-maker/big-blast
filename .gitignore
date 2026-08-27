@@ -3,3 +3,4 @@ android/app/build/
 android/.gradle/
 *.keystore
 *.jks
+icon-sheet.html
