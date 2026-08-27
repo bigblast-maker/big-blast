@@ -34,16 +34,24 @@ bigblast-android-setup/     Capacitor scaffold (www/, capacitor.config.json)
 
 ## Workflow that actually works here
 
+0. **It's a git repo now** (`master`, baseline commit `f53ce44`). Branch for
+   anything substantial. This is the undo that the "work on a copy" rule below
+   was standing in for.
 1. Work on a copy, validate, *then* overwrite the real file.
 2. **Always validate after edits:**
    - brace/paren balance across the file AND within `<style>` alone
    - duplicate HTML IDs
    - every `getElementById` target exists
+   - every `data-icon` name exists in `ICON_SVGS`
    - `node --check` on the extracted `<script>` contents
 3. **Screenshot to verify visuals.** DOM checks alone have repeatedly missed
    real bugs (see below). If it's a visual change, look at it.
 4. Run `node bigblast-test-suite.js --runs 1 --max-placements 20` before
-   calling anything done. Expect `9/9 overlays` and no JS errors.
+   calling anything done. Expect `9/9 overlays` and no JS errors. Needs
+   `npm install playwright && npx playwright install chromium` once.
+5. To preview, serve over http — `file://` loads it as a static snapshot in
+   some viewers and the JS never runs, so it hangs on the splash screen.
+   `.claude/launch.json` has a `big-blast` server config on port 4173.
 
 ## Bug classes that have bitten us before
 
@@ -97,10 +105,22 @@ instead. Several "failures" have been the harness, not the game.
   thing on screen. PLAY is the only solid-amber element.
 - **Type scale:** `--fs-xs` through `--fs-5xl`. No raw rem font sizes.
 - **Radii:** `--r-sm/md/lg` only.
-- **Icons:** inline SVG via `ICON_SVGS` + `renderIcons()`. Emoji render as
-  different artwork per device, so chrome uses SVG. Emoji in *game content*
-  (falling 🎃🦇, celebrations) is fine and intentional.
+- **Icons:** inline SVG via `ICON_SVGS` + `renderIcons()`, 39 icons in one
+  24×24 stroke style. Emoji render as different artwork per device, so chrome
+  uses SVG — this is now actually enforced, not just aspirational. Emoji in
+  *game content* (falling 🎃🦇, block glyphs, the rank-up rain) is fine and
+  intentional; that's the only place any emoji survive.
+  `ICON_SVGS` lives at the **top** of the script IIFE because it's a `const`
+  and start-up code calls `iconMarkup()` — moving it down reintroduces a
+  temporal-dead-zone crash that hangs the splash screen.
+  `iconMarkup()` output carries its own `.icoSvg` sizing class, so it can be
+  dropped into any container; an unclassed inline `<svg>` blows up to 300×150.
 - Solid fills and 1px borders. No glassmorphism, no decorative glow.
+- **Motion:** a press is a single settle, not a wobble. Shake is reserved for
+  where the shake *is* the information (board shake on clear, tension effect).
+- **Copy:** no exclamation marks, no `— em-dash explainer` clauses, no
+  staccato three-word taglines, sentence case for labels. Those are the
+  loudest tells that a machine wrote the interface.
 
 ## Ergonomics
 
