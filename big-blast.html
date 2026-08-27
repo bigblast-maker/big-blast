@@ -1140,7 +1140,9 @@
   .menuStatValue{ font-size:var(--fs-md); font-weight:900; color:var(--text); }
   .menuStatLabel{ font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-top:1px; }
   .menuStatDivider{ width:1px; height:22px; background:rgba(255,255,255,0.12); }
-  .menuStatsChevron{ color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-left:2px; }
+  /* Muted, not amber. Amber is the "press this" colour and a decorative
+     affordance chevron should not compete with the Play button for it. */
+  .menuStatsChevron{ color:var(--muted); font-weight:700; font-size:var(--fs-md); margin-left:2px; align-self:center; }
 
   .statsGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
   .statCard{
@@ -1738,7 +1740,7 @@
 <div class="overlay" id="streakReviveOverlay">
   <div class="modalCard">
     <h2>Combo at risk</h2>
-    <p>You're about to lose your <span id="brokenStreakNum">0</span>x combo — are you sure you want to continue? (Ad revive is once per game.)</p>
+    <p>Continuing ends your <span id="brokenStreakNum">0</span>x combo. You can revive with an ad once per game.</p>
     <div class="modalButtons">
       <button class="btn big" id="watchAdStreakBtn"><span class="ico" data-icon="video"></span>Watch ad, keep combo</button>
       <button class="btn secondary small" id="declineStreakBtn">No, let it go</button>
@@ -1768,9 +1770,9 @@
 
 <div class="overlay" id="gameOverOverlay">
   <div class="modalCard">
-    <h2 id="gameOverTitle">Board Full!</h2>
+    <h2 id="gameOverTitle">Board full</h2>
     <div class="modalScore" id="finalScoreDisplay">0</div>
-    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-bottom:8px;">🏆 NEW HIGH SCORE!</div>
+    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-bottom:8px;">New high score</div>
     <div class="recapGrid">
       <div class="recapItem"><div class="recapVal" id="recapLines">0</div><div class="recapLbl">Lines</div></div>
       <div class="recapItem"><div class="recapVal" id="recapCombo">0</div><div class="recapLbl">Best Combo</div></div>
@@ -1787,7 +1789,7 @@
         <button class="btn small" id="copyChallengeCodeBtn"><span class="ico" data-icon="clipboard"></span>Copy code</button>
       </div>
     </div>
-    <p id="gameOverText">You're about to lose the game — are you sure you want to continue?</p>
+    <p id="gameOverText">There are no moves left. Continue anyway?</p>
     <div class="modalButtons">
       <button class="btn big" id="watchAdGameOverBtn"><span class="ico" data-icon="video"></span>Watch ad, keep playing</button>
       <button class="btn big" id="usePowerupGameOverBtn"><span class="ico" data-icon="bomb"></span>Use a power-up</button>
@@ -1881,7 +1883,7 @@
 <div class="overlay" id="enterCodeOverlay">
   <div class="modalCard">
     <h2>Enter challenge code</h2>
-    <p>Paste the code your friend sent you — you'll play the exact same puzzle they did.</p>
+    <p>Paste the code a friend sent you and you'll get the same puzzle they played.</p>
     <input type="text" id="challengeCodeInput" placeholder="BB-XXXXX-XXX"
       style="width:100%; box-sizing:border-box; padding:12px; border-radius:var(--r-md); border:none; background:rgba(255,255,255,0.1); color:var(--text); font-size:var(--fs-md); text-align:center; letter-spacing:1px; margin-bottom:8px; font-weight:700;">
     <p id="challengeCodeError" style="color:var(--red); font-size:var(--fs-sm); min-height:16px; margin-top:0;"></p>
@@ -1895,9 +1897,9 @@
 <div class="overlay" id="challengesOverlay">
   <div class="modalCard wide">
     <h2>Challenges</h2>
-    <div class="challengeSectionTitle"><span>Daily — resets every day</span><span class="countdownText" id="dailyResetCountdown"></span></div>
+    <div class="challengeSectionTitle"><span>Daily</span><span class="countdownText" id="dailyResetCountdown"></span></div>
     <div id="dailyChallengeList"></div>
-    <div class="challengeSectionTitle"><span>Weekly — resets every Monday</span><span class="countdownText" id="weeklyResetCountdown"></span></div>
+    <div class="challengeSectionTitle"><span>Weekly</span><span class="countdownText" id="weeklyResetCountdown"></span></div>
     <div id="weeklyChallengeList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeChallengesBtn">Close</button></div>
   </div>
@@ -1907,7 +1909,7 @@
   <div class="modalCard wide">
     <h2>Daily rewards</h2>
     <div id="loginCurrentStreak" style="font-weight:700; color:var(--gold); margin-bottom:4px;"></div>
-    <p style="margin-top:0;">Come back every day — rewards keep growing the longer your streak runs.</p>
+    <p style="margin-top:0;">Rewards grow the longer your streak runs.</p>
     <div id="loginDayCardsRow" class="loginDayCardsRow"></div>
     <div id="loginClaimArea"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeDailyRewardsBtn">Close</button></div>
@@ -1917,7 +1919,7 @@
 <div class="overlay" id="achievementsOverlay">
   <div class="modalCard wide">
     <h2>Achievements</h2>
-    <p style="margin-top:-10px;">Permanent milestones — these never reset.</p>
+    <p style="margin-top:-10px;">Permanent milestones. These never reset.</p>
     <div id="achievementList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeAchievementsBtn">Close</button></div>
   </div>
@@ -1967,7 +1969,7 @@
 <div class="overlay" id="tutorialOverlay">
   <div class="modalCard">
     <div style="text-align:right; margin-bottom:-6px;"><button class="btn small secondary" id="tutorialSkipBtn" style="padding:5px 12px;">Skip</button></div>
-    <div style="font-size:var(--fs-4xl); margin:10px 0 4px 0;" id="tutorialEmoji">👆</div>
+    <div style="font-size:var(--fs-4xl); margin:10px 0 4px 0; color:var(--accent);" id="tutorialEmoji"></div>
     <h2 id="tutorialTitle">Place Pieces</h2>
     <p id="tutorialText">Drag pieces from the tray onto the grid.</p>
     <div id="tutorialDots" style="display:flex; justify-content:center; gap:6px; margin-bottom:16px;"></div>
@@ -2031,7 +2033,7 @@
     <button class="iconBtn themeTryCloseBtn" id="closeThemeTryBtn">✕</button>
     <h2 id="themeTryName">Theme Name</h2>
     <div class="themeTryBoard" id="themeTryBoard"></div>
-    <div class="themeTryHint">Preview only — no moves here</div>
+    <div class="themeTryHint">Preview only</div>
   </div>
 </div>
 
@@ -2072,9 +2074,9 @@
     <div class="rankUpTransition">
       <div class="rankUpBadgeOld" id="rankUpBadgeOld"></div>
       <div class="rankUpArrow">→</div>
-      <div class="rankUpRingWrap"><div class="rankUpRings"></div><div class="rankUpBadgeBig" id="rankUpBadgeBig">🥈</div></div>
+      <div class="rankUpRingWrap"><div class="rankUpRings"></div><div class="rankUpBadgeBig" id="rankUpBadgeBig"></div></div>
     </div>
-    <h2 class="rankUpTitle">RANK UP!</h2>
+    <h2 class="rankUpTitle">RANK UP</h2>
     <div class="rankUpNewRankName" id="rankUpNewRankName"></div>
     <div class="modalButtons"><button class="btn" id="rankUpContinueBtn">Continue</button></div>
   </div>
@@ -3749,7 +3751,7 @@
     const startDay = pending ? pending.day : (state.streak+1);
     document.getElementById('loginCurrentStreak').textContent = state.streak>0
       ? `Current streak: ${state.streak} day${state.streak>1?'s':''}`
-      : `Start your streak today!`;
+      : `Start your streak today`;
     const row = document.getElementById('loginDayCardsRow');
     row.innerHTML = '';
     for(let i=0;i<7;i++){
@@ -3763,7 +3765,7 @@
     }
     const claimArea = document.getElementById('loginClaimArea');
     if(pending){
-      claimArea.innerHTML = `<button class="btn" id="claimLoginBtnStandalone" style="width:100%;">Claim Day ${pending.day} Reward</button>`;
+      claimArea.innerHTML = `<button class="btn" id="claimLoginBtnStandalone" style="width:100%;">Claim day ${pending.day}</button>`;
       document.getElementById('claimLoginBtnStandalone').addEventListener('click', ()=>{
         claimLoginBonus();
         renderLoginOverlay();
@@ -4050,14 +4052,14 @@
 
   // ---------- First-run tutorial ----------
   const TUTORIAL_STEPS = [
-    {emoji:'👆', title:'Place Pieces', text:"Drag pieces from the tray at the bottom onto the grid. Green means it fits, red means it doesn't."},
-    {emoji:'💥', title:'Clear Lines', text:'Fill an entire row or column and it explodes, scoring points. Chain clears together to build a combo multiplier!'},
-    {emoji:'⚡', title:'Power Pieces', text:'💣 Bombs clear a 3×3 area. ⚡ Lasers clear a whole row and column. Earn more from Challenges, then drag them from your Inventory bar anytime.'},
+    {sym:'pointer', title:'Place pieces', text:"Drag a piece from the tray onto the grid. Green means it fits, red means it doesn't."},
+    {sym:'burst', title:'Clear lines', text:'Fill a whole row or column and it clears. Chain clears back to back to build a combo multiplier.'},
+    {sym:'bolt', title:'Power pieces', text:'Bombs clear a 3x3 area. Lasers clear a whole row and column. Earn more from challenges, then drag them in from the inventory bar.'},
   ];
   let tutorialStepIdx = 0;
   function renderTutorialStep(idx){
     const step = TUTORIAL_STEPS[idx];
-    document.getElementById('tutorialEmoji').textContent = step.emoji;
+    document.getElementById('tutorialEmoji').innerHTML = iconMarkup(step.sym);
     document.getElementById('tutorialTitle').textContent = step.title;
     document.getElementById('tutorialText').textContent = step.text;
     document.getElementById('tutorialDots').innerHTML = TUTORIAL_STEPS.map((_,i)=>`<span class="tutorialDot ${i===idx?'active':''}"></span>`).join('');
@@ -5401,8 +5403,8 @@
   function spawnComboLostPopup(lostCombo){
     if(lostCombo < 5) return; // small losses aren't worth interrupting the player over
     const tier = lostCombo>=40 ? 'huge' : lostCombo>=20 ? 'big' : 'medium';
-    const text = tier==='huge' ? `💔💔 HUGE COMBO LOST — x${lostCombo}`
-      : tier==='big' ? `💔 Combo Lost — x${lostCombo}`
+    const text = tier==='huge' ? `Combo lost, x${lostCombo}`
+      : tier==='big' ? `Combo lost, x${lostCombo}`
       : `Combo Lost — x${lostCombo}`;
     const el = document.createElement('div');
     el.className = 'comboLostPopup combo-lost-' + tier;
@@ -5423,11 +5425,11 @@
   }
 
   const STREAK_TITLES = [
-    {min:60, text:'👑 GODLIKE!', cls:'streak-godlike'},
-    {min:40, text:'🌟 LEGENDARY!', cls:'streak-legendary'},
-    {min:25, text:'💥 BLAZING!', cls:'streak-blazing'},
-    {min:15, text:'⚡ UNSTOPPABLE!', cls:'streak-unstoppable'},
-    {min:8,  text:'🔥 ON FIRE!', cls:'streak-fire'},
+    {min:60, text:'GODLIKE', cls:'streak-godlike'},
+    {min:40, text:'LEGENDARY', cls:'streak-legendary'},
+    {min:25, text:'BLAZING', cls:'streak-blazing'},
+    {min:15, text:'UNSTOPPABLE', cls:'streak-unstoppable'},
+    {min:8,  text:'ON FIRE', cls:'streak-fire'},
   ];
   let lastStreakTitleShown = null;
   function updateStreakTitle(comboVal){
@@ -5623,7 +5625,7 @@
     const cy = rect.top + rect.height/2 - boardRect.top;
     const el = document.createElement('div');
     el.className = 'gemPopup';
-    el.textContent = '+1💎';
+    el.textContent = '+1';
     el.style.left = cx+'px'; el.style.top = cy+'px';
     fxLayer.appendChild(el);
     requestAnimationFrame(()=>el.classList.add('animate'));
@@ -5929,7 +5931,7 @@
       sfxLaser();
       haptic([15,15,15,15,30]);
       bumpDailyStat('specialUsed',1); bumpWeeklyStat('specialUsed',1); bumpLifetimeStat('specialUsed',1);
-      msgEl.textContent = `⚡ Laser cleared row & column!`;
+      msgEl.textContent = `Laser cleared the row and column`;
     }
 
     const [popX, popY] = boardCenterOfCells(placedCells);
@@ -5996,13 +5998,13 @@
           const perfectBonus = 500 * multiplier;
           turnScore += perfectBonus;
           spawnPerfectClearCelebration(perfectBonus, multiplier);
-          msgEl.textContent = `✨ PERFECT CLEAR! x${multiplier} ✨`;
+          msgEl.textContent = `Perfect clear, x${multiplier}`;
           perfectClearAwardedThisRound = true;
         } else if(naturalLines >= 2){
           spawnMultiClearCelebration(naturalLines, turnScore);
           msgEl.textContent = `${multiClearLabel(naturalLines)} +${turnScore.toLocaleString()}`;
         } else if(!piece.isBomb && !piece.isLaser){
-          msgEl.textContent = combo>1 ? `🔥 Combo x${multiplier}! +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared!`;
+          msgEl.textContent = combo>1 ? `Combo x${multiplier}, +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared`;
           haptic(combo>=3 ? [20,30,20,30,20] : [20,30,20]);
         }
 
@@ -6184,11 +6186,11 @@
       const gemAmount = Math.round(100 * Math.sqrt(Math.max(tier.min,silverMin)/silverMin));
       const itemType = Math.random()<0.5 ? 'bomb' : 'laser';
       const itemAmount = 1 + Math.floor(Math.random()*2); // 1 or 2
-      const itemIcon = itemType==='bomb' ? '💣' : '⚡';
+      const itemIcon = iconMarkup(itemType==='bomb' ? 'bomb' : 'bolt');
       grantReward({gems: gemAmount, [itemType]: itemAmount});
       rewardEl.style.display = 'flex';
       rewardEl.innerHTML = `
-        <div class="rewardChip rc-gem"><div class="rewardChipIcon">💎</div><div class="rewardChipValue">+${gemAmount}</div></div>
+        <div class="rewardChip rc-gem"><div class="rewardChipIcon">${iconMarkup('gem')}</div><div class="rewardChipValue">+${gemAmount}</div></div>
         <div class="rewardChip rc-${itemType}" style="animation-delay:0.1s"><div class="rewardChipIcon">${itemIcon}</div><div class="rewardChipValue">+${itemAmount}</div></div>`;
     } else {
       rewardEl.style.display = 'none';
@@ -6289,7 +6291,7 @@
       gemsAwardedThisGame = true;
       saveGems();
       updateGemDisplays();
-      gemsLine.textContent = '+3 💎 end-of-game bonus!';
+      gemsLine.textContent = '+3 gems, end-of-game bonus';
     } else {
       gemsLine.textContent = '';
     }
@@ -6318,7 +6320,7 @@
         powerupBtn.style.display = haveInventory ? 'block' : 'none';
         if(haveInventory){
           const kind = inventory.bomb>0 ? 'Bomb' : 'Laser';
-          powerupBtn.textContent = `💣 Use a ${kind} — Keep Playing`;
+          powerupBtn.innerHTML = `${iconMarkup('bomb')}Use a ${kind}`;
         }
         document.getElementById('gameOverText').textContent = adsRemoved
           ? "You're about to lose the game — are you sure? Clear some space to keep playing (free — ads removed)."
@@ -6334,14 +6336,14 @@
       const myPct = scoreToPercentile(score);
       if(challengeTargetScore===null){
         createBlock.style.display = 'block';
-        resultText.textContent = '🎯 Challenge created!';
+        resultText.textContent = 'Challenge created';
         pctText.textContent = `That beats roughly ${myPct.toFixed(0)}% of runs — see if your friend can top it.`;
         document.getElementById('challengeCodeDisplay').textContent = encodeChallengeCode(challengeSeed, score);
       } else {
         createBlock.style.display = 'none';
         const theirPct = scoreToPercentile(challengeTargetScore);
-        if(score > challengeTargetScore) resultText.textContent = `🏆 You won! ${score.toLocaleString()} vs their ${challengeTargetScore.toLocaleString()}`;
-        else if(score === challengeTargetScore) resultText.textContent = `😮 Exact tie — ${score.toLocaleString()} apiece!`;
+        if(score > challengeTargetScore) resultText.textContent = `You won, ${score.toLocaleString()} to ${challengeTargetScore.toLocaleString()}`;
+        else if(score === challengeTargetScore) resultText.textContent = `Exact tie, ${score.toLocaleString()} apiece`;
         else resultText.textContent = `You scored ${score.toLocaleString()} — they got ${challengeTargetScore.toLocaleString()}. So close!`;
         pctText.textContent = `You beat ~${myPct.toFixed(0)}% of runs, they beat ~${theirPct.toFixed(0)}%.`;
       }
@@ -6371,7 +6373,7 @@
       // Zen and Time Attack never end from a stuck board — only their own rules do.
       if(gameMode==='zen' || gameMode==='timeattack'){
         clearSpaceForRevive();
-        msgEl.textContent = gameMode==='zen' ? '🧘 Board refreshed — keep going.' : 'Space cleared — keep the clock running!';
+        msgEl.textContent = gameMode==='zen' ? 'Board refreshed.' : 'Space cleared.';
         return;
       }
       if(gameMode==='duel'){
@@ -6393,7 +6395,7 @@
     // current player's live score/combo hasn't been saved back yet.
     duelScores[duelCurrentPlayer] = score;
     const p1 = duelScores[0], p2 = duelScores[1];
-    const title = p1===p2 ? "🤝 It's a Tie!" : (p1>p2 ? '🏆 Player 1 Wins!' : '🏆 Player 2 Wins!');
+    const title = p1===p2 ? "It's a tie" : (p1>p2 ? 'Player 1 wins' : 'Player 2 wins');
     document.getElementById('duelOverTitle').textContent = title;
     document.getElementById('duelResultP1').textContent = p1.toLocaleString();
     document.getElementById('duelResultP2').textContent = p2.toLocaleString();
@@ -6444,7 +6446,7 @@
   document.getElementById('copyChallengeCodeBtn').addEventListener('click', ()=>{
     const code = document.getElementById('challengeCodeDisplay').textContent;
     const btn = document.getElementById('copyChallengeCodeBtn');
-    const done = ()=>{ btn.textContent = '✅ Copied!'; setTimeout(()=>{ btn.textContent = '📋 Copy Code'; }, 1600); };
+    const done = ()=>{ btn.textContent = 'Copied'; setTimeout(()=>{ btn.innerHTML = `${iconMarkup('clipboard')}Copy code`; }, 1600); };
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(code).then(done).catch(()=>{
         btn.textContent = code; // fallback: show it inline so they can select/copy manually
