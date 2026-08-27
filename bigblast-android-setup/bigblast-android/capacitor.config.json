@@ -1,0 +1,10 @@
+{
+  "appId": "com.bezaz.bigblast",
+  "appName": "Big Blast",
+  "webDir": "www",
+  "backgroundColor": "#0a0512",
+  "android": {
+    "backgroundColor": "#0a0512",
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "big-blast",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:\\Users\\pleye\\AppData\\Local\\Temp\\claude\\C--Users-pleye-Desktop-big-blast\\8ee69859-18c4-4fd7-a508-a423926220cd\\scratchpad\\serve.js",
+        "C:\\Users\\pleye\\Desktop\\big-blast",
+        "4173"
+      ],
+      "port": 4173
+    }
+  ]
+}
