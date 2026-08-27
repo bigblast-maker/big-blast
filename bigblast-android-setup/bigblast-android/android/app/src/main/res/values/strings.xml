@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Big Blast</string>
+    <string name="title_activity_main">Big Blast</string>
+    <string name="package_name">com.bezaz.bigblast</string>
+    <string name="custom_url_scheme">com.bezaz.bigblast</string>
+</resources>

@@ -6,59 +6,139 @@
 <title>Big Blast</title>
 <style>
   :root{
-    --bg1:#2a1358; --bg2:#0f0722; --panel:#33206a; --panel2:#291a56;
-    --gold:#ffc233; --pink:#ff2f87; --cyan:#1de9ff; --green:#4dff9e; --red:#ff3b5c;
-    --text:#f4ecff; --muted:rgba(244,236,255,0.68);
+    /* ---- Type scale ----------------------------------------------------
+       One modular scale instead of ad-hoc sizes. Every size in the UI is a
+       step on this scale, which is what makes spacing and hierarchy read as
+       deliberate rather than arbitrary. */
+    --fs-xs:0.625rem; --fs-sm:0.75rem; --fs-base:0.875rem; --fs-md:1rem;
+    --fs-lg:1.125rem; --fs-xl:1.375rem; --fs-2xl:1.75rem; --fs-3xl:2.25rem;
+    --fs-4xl:3rem; --fs-5xl:3.5rem;
+    /* ---- Radius scale ----
+       Chunkier than a typical dashboard on purpose — real block-puzzle hits
+       (Block Blast, Woodoku, Candy Crush) run rounder corners than most UI
+       kits default to; sharp-ish corners are one of the things that reads as
+       "generated," not "played." */
+    --r-sm:9px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+    /* Slate rather than purple as the BASE, but a real accent palette on top —
+       amber stays the one CTA/brand color (Play, primary actions), while gold,
+       pink, cyan, green and red are genuine distinct hues used with intent:
+       gold/pink for celebration, cyan for currency, green for "on"/success,
+       red for danger. What actually reads as AI-generated isn't color, it's
+       color with no reason behind it — a random gradient on a settings row,
+       an emoji standing in for an icon nobody drew. Same-hue gloss/shadow
+       (a lighter tint of the button's own color for shine) is the real-game
+       convention and is fine everywhere; an arbitrary multi-hue gradient
+       divorced from meaning is the thing to avoid. */
+    --bg1:#1d2430; --bg2:#0d1117; --panel:#212a38; --panel2:#1a222e;
+    --line:#323d4d;
+    --accent:#f0913a; --accent-dim:#c26f26; --accent-glow:#ffb066;
+    --gold:#ffd35c; --pink:#ff4f93; --cyan:#4fd8ff;
+    --green:#3ddc84; --red:#ff5c5c;
+    --text:#e8edf4; --muted:#8d99a8;
+    --font-display: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
     margin:0; padding:0; height:100%;
-    background:radial-gradient(circle at 50% 0%, var(--bg1), var(--bg2));
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* A flat fill reads like a form background. Real puzzle-game boards sit
+       in front of a soft radial glow instead — same navy hue family as the
+       flat colour it replaces, so it stays calm, just no longer dead flat. */
+    background:radial-gradient(120% 85% at 50% -8%, #1c2536 0%, var(--bg2) 55%, #080b0f 100%);
+    font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color:var(--text); overflow:hidden; touch-action:none; overscroll-behavior:none;
     transition:background 0.4s ease;
+    -webkit-font-smoothing:antialiased;
   }
   #app{ position:relative; display:flex; flex-direction:column; align-items:center; height:100%; padding:10px; max-width:480px; margin:0 auto; }
 
   button{ font-family:inherit; border:none; cursor:pointer; }
   .btn{
-    --pressY:3px;
-    background:linear-gradient(90deg,var(--pink),var(--gold)); color:#20143a; font-weight:800;
-    padding:13px 28px; border-radius:999px; font-size:1rem;
-    box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 6px 14px rgba(0,0,0,0.35);
-    transition:transform 0.08s ease, box-shadow 0.08s ease;
+    --pressY:4px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    /* Gloss overlay is a lighter TINT of the button's own colour, not a
+       different hue — the real "candy button" technique: a highlight layer on
+       top of a flat base, same family as the base underneath it. */
+    background:linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 48%), var(--accent);
+    color:#1a1208; font-weight:700;
+    padding:14px 30px; border-radius:var(--r-md); font-size:var(--fs-md); letter-spacing:0.2px;
+    box-shadow:0 4px 0 var(--accent-dim), 0 7px 16px -4px rgba(240,145,58,0.5);
+    transition:transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
   }
-  .btn:active{ box-shadow:0 1px 0 rgba(0,0,0,0.3); }
+  /* Icons inside buttons ride slightly under the cap height so they optically
+     centre against uppercase labels rather than sitting a hair high. */
+  .btn .ico{ font-size:1.15em; margin-top:-0.05em; flex-shrink:0; }
+  .btn:active{ box-shadow:0 1px 0 var(--accent-dim); transform:translateY(3px); }
   .btn.pressShake{ animation:btnPressShake 0.32s ease; }
+  /* A press is a press, not an earthquake. This used to wobble laterally four
+     times over 0.32s on every single tap; now it just travels down and settles,
+     which reads as responsive instead of frantic. Board shake and the tension
+     effect still shake, because there the shake IS the information. */
   @keyframes btnPressShake{
-    0%{ transform:translateY(0) translateX(0); }
-    15%{ transform:translateY(var(--pressY)) translateX(-2px); }
-    35%{ transform:translateY(var(--pressY)) translateX(2px); }
-    55%{ transform:translateY(var(--pressY)) translateX(-1px); }
-    75%{ transform:translateY(var(--pressY)) translateX(1px); }
-    100%{ transform:translateY(0) translateX(0); }
+    0%{ transform:translateY(0); }
+    38%{ transform:translateY(var(--pressY)); }
+    100%{ transform:translateY(0); }
   }
-  .btn.secondary{ --pressY:2px; background:rgba(255,255,255,0.08); color:var(--text); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18); }
-  .btn.secondary:active{ box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
-  .btn.small{ padding:9px 18px; font-size:0.85rem; }
-  .btn.big{ padding:17px 34px; font-size:1.15rem; }
+  .btn.secondary{
+    --pressY:3px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 48%), var(--panel);
+    color:var(--text); box-shadow:0 4px 0 #131a24;
+  }
+  .btn.secondary:active{ box-shadow:0 1px 0 #131a24; transform:translateY(3px); }
+  .btn.small{ padding:9px 18px; font-size:var(--fs-base); }
+  .btn.big{ padding:17px 34px; font-size:var(--fs-lg); }
   .btn:disabled{ opacity:0.4; }
   .iconBtn{
     position:relative;
     width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.08);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:var(--fs-lg);
     flex-shrink:0; transition:transform 0.08s ease, background 0.08s ease;
   }
   .iconBtn:active{ background:rgba(255,255,255,0.16); }
   .iconBtn.pressShake{ animation:iconBtnPressShake 0.32s ease; }
   @keyframes iconBtnPressShake{
-    0%{ transform:scale(1) translateX(0); }
-    15%{ transform:scale(0.88) translateX(-2px); }
-    35%{ transform:scale(0.88) translateX(2px); }
-    55%{ transform:scale(0.88) translateX(-1px); }
-    75%{ transform:scale(0.88) translateX(1px); }
-    100%{ transform:scale(1) translateX(0); }
+    0%{ transform:scale(1); }
+    38%{ transform:scale(0.9); }
+    100%{ transform:scale(1); }
   }
+
+  /* Bigger, named top-row buttons (Settings + More) — replaces a row of 6
+     unlabeled icons with 2 larger, clearer ones. */
+  .iconBtnLabeled{
+    position:relative; display:flex; align-items:center; gap:7px;
+    padding:11px 17px; border-radius:var(--r-md); background:var(--panel);
+    border:1px solid var(--line);
+    transition:transform 0.08s ease, background 0.08s ease;
+  }
+  .iconBtnLabeled:active{ background:rgba(255,255,255,0.16); }
+  .ico{ display:inline-flex; align-items:center; justify-content:center; }
+  .ico svg{ width:1em; height:1em; display:block; }
+  /* Sizing for icons injected straight into a container by iconMarkup(). */
+  .icoSvg{ width:1em; height:1em; flex-shrink:0; vertical-align:-0.125em; }
+  /* Rank chrome: the tier's colour comes from the .rank-* class on the badge,
+     so the glyph just inherits it. */
+  .rankBadge{ gap:6px; }
+  .rankBadge .icoSvg{ width:1.05em; height:1.05em; }
+  .rankRungIcon .icoSvg, .rankBarIcon .icoSvg{ width:0.85em; height:0.85em; }
+  .historyRank .icoSvg{ width:1em; height:1em; color:var(--accent); }
+  .timerBadge{ display:inline-flex; align-items:center; gap:6px; }
+  .themeCardTryBtn .icoSvg{ width:1em; height:1em; }
+  .iconBtnLabeledIcon{ font-size:var(--fs-xl); line-height:1; }
+  .iconBtnLabeledText{ font-size:var(--fs-base); font-weight:700; color:var(--text); }
+  .iconBtnLabeled .badgeDot{ top:5px; right:5px; }
+
+  /* Rows inside the More popup — same "bigger + named" treatment as the top-row
+     buttons, just laid out as a vertical list instead of pills. */
+  .moreMenuRow{
+    position:relative; display:flex; align-items:center; gap:12px; width:100%;
+    padding:13px 14px; margin-bottom:8px; border-radius:var(--r-lg); text-align:left;
+    background:var(--panel); border:1px solid var(--line);
+    transition:transform 0.08s ease, background 0.08s ease;
+  }
+  .moreMenuRow:active{ transform:scale(0.98); background:rgba(255,255,255,0.09); }
+  .moreMenuIcon{ font-size:var(--fs-xl); line-height:1; flex-shrink:0; }
+  .moreMenuText{ font-size:var(--fs-base); font-weight:700; color:var(--text); }
+  .moreMenuRow .badgeDot{ position:static; margin-left:auto; box-shadow:none; }
+
   .badgeDot{
     position:absolute; top:1px; right:1px; width:11px; height:11px; border-radius:50%;
     background:var(--red); box-shadow:0 0 0 2px var(--panel2); display:none;
@@ -66,19 +146,25 @@
   .badgeDot.show{ display:block; }
 
   .gemPill{
-    display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.08);
-    border-radius:999px; padding:0 12px; height:34px; font-weight:800; color:var(--gold); font-size:0.82rem;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); flex-shrink:0; white-space:nowrap;
+    display:flex; align-items:center; gap:4px; background:var(--panel); border:1px solid rgba(79,216,255,0.35);
+    border-radius:var(--r-md); padding:0 12px; height:34px; font-weight:800; color:var(--text); font-size:var(--fs-base);
+    flex-shrink:0; white-space:nowrap;
   }
-  .gemPill.bump{ animation:gemPillBump 0.5s ease; }
+  /* Currency reads as cyan everywhere it appears, menu chip included — one
+     consistent colour-coded meaning instead of a neutral counter. */
+  .gemPill .ico{ color:var(--cyan); }
+  .gemPill.bump{ animation:gemPillBump 0.42s cubic-bezier(.34,1.4,.64,1); }
+  /* Was a 1.55x jump with a cyan halo. The design system says solid fills and
+     no decorative glow, and a counter ticking up does not need to be the
+     loudest thing on screen — a small overshoot reads as "that registered". */
   @keyframes gemPillBump{
-    0%{ transform:scale(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
-    35%{ transform:scale(1.55); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px 5px rgba(120,235,255,0.85); }
-    100%{ transform:scale(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.16); }
+    100%{ transform:scale(1); }
   }
 
   .flyingGem{
-    position:fixed; z-index:2200; font-size:2rem; pointer-events:none;
+    position:fixed; z-index:2200; font-size:var(--fs-3xl); pointer-events:none;
     transform:translate(-50%,-50%) scale(1); opacity:1;
     filter:drop-shadow(0 0 10px rgba(120,235,255,1)) drop-shadow(0 0 22px rgba(79,227,255,0.75));
   }
@@ -91,7 +177,7 @@
     100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15) rotate(340deg); opacity:0.2; }
   }
   .flyingGemTrail{
-    position:fixed; z-index:2199; pointer-events:none; font-size:1.1rem; opacity:0.6;
+    position:fixed; z-index:2199; pointer-events:none; font-size:var(--fs-lg); opacity:0.6;
     filter:drop-shadow(0 0 8px rgba(120,235,255,0.8));
   }
   .flyingGemTrail.fly{ animation:gemTrailFade 0.5s ease-out forwards; }
@@ -100,26 +186,52 @@
     100%{ opacity:0; transform:translate(-50%,-50%) scale(0.2); }
   }
 
-  #menuScreen{ display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; text-align:center; position:relative; }
-  #menuScreen .topRow{ position:absolute; top:0; right:0; padding:6px; display:flex; gap:8px; }
-  #menuScreen h1{
-    font-size:2.3rem; margin:0 0 6px 0; font-weight:900; letter-spacing:1px;
-    background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
+  #menuScreen{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; width:100%; text-align:center; position:relative;
+    padding:78px 0 104px; gap:0;
   }
-  #menuScreen .tagline{ color:var(--muted); font-size:0.9rem; margin-bottom:20px; }
+  #menuScreen .topRow{
+    position:absolute; top:0; left:0; right:0; padding:14px 12px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  /* Anchored to the bottom so it lands in the natural thumb arc regardless of
+     how tall the content above happens to be. */
+  .menuBottomNav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    padding:0 12px 26px;
+  }
+  .gemPillMenu{
+    display:flex; align-items:center; gap:6px;
+    padding:9px 14px; border-radius:var(--r-md);
+    background:var(--panel); border:1px solid var(--line);
+    font-size:var(--fs-base); font-weight:700; color:var(--text);
+  }
+  .gemPillMenu .ico{ color:var(--cyan); font-size:var(--fs-md); }
+  /* Stacked lockup rather than one inline string. "BIG" is tracked out so it
+     sits flush to the width of "BLAST" beneath it — two words set as a single
+     shape reads as a mark somebody drew, where one line of bold system font
+     reads as an <h1> nobody thought about. */
+  #menuScreen h1{
+    display:flex; flex-direction:column; align-items:center;
+    margin:0 0 26px 0; line-height:0.84; color:var(--text);
+  }
+  #menuScreen h1 .wordTop{
+    font-size:var(--fs-lg); font-weight:700; color:var(--muted);
+    /* The trailing letter-space on the final glyph would shove the word off
+       centre; the matching indent pushes it back. */
+    letter-spacing:0.60em; text-indent:0.60em;
+  }
+  #menuScreen h1 .wordBot{ font-family:var(--font-display); font-size:var(--fs-5xl); font-weight:800; letter-spacing:-0.035em; text-shadow:0 3px 0 rgba(0,0,0,0.28); }
+  #menuScreen h1 .accentWord{ color:var(--accent); }
   .highScoreCard{
-    background:linear-gradient(160deg, rgba(255,255,255,0.09), var(--panel) 60%);
-    border-radius:18px; padding:16px 34px; margin-bottom:14px;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1), 0 6px 22px rgba(0,0,0,0.3);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-lg); padding:18px 20px 6px 20px; margin-bottom:28px;
+    min-width:260px;
   }
   /* The menu's centre was visually static — a slow breathing glow on the primary
      action gives it life without pulling attention away from anything else. */
-  #playBtn{ animation:playBtnBreathe 3.2s ease-in-out infinite; }
-  @keyframes playBtnBreathe{
-    0%,100%{ box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 6px 14px rgba(0,0,0,0.35), 0 0 0 rgba(255,47,135,0); }
-    50%{ box-shadow:0 4px 0 rgba(0,0,0,0.3), 0 6px 22px rgba(0,0,0,0.35), 0 0 26px rgba(255,47,135,0.45); }
-  }
   #playBtn.pressShake{ animation:btnPressShake 0.32s ease; }
   #menuRankBadge{ cursor:pointer; transition:transform 0.08s ease; }
   #menuRankBadge:active{ transform:scale(0.94); }
@@ -127,8 +239,8 @@
 
   .rankBadge{
     display:inline-flex; align-items:center; gap:5px; margin-top:8px;
-    font-size:0.68rem; font-weight:800; letter-spacing:0.5px; padding:4px 10px;
-    border-radius:20px; background:rgba(255,255,255,0.08);
+    font-size:var(--fs-xs); font-weight:800; letter-spacing:0.5px; padding:4px 10px;
+    border-radius:var(--r-lg); background:rgba(255,255,255,0.08);
   }
   .rankBadge.rank-bronze{ color:#d99a5c; box-shadow:inset 0 0 0 1px rgba(217,154,92,0.4); }
   .rankBadge.rank-silver{ color:#c9d3dc; box-shadow:inset 0 0 0 1px rgba(201,211,220,0.4); }
@@ -188,7 +300,7 @@
 
   .rankUpEmojiRain{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
   .rankUpEmojiPiece{
-    position:absolute; top:-40px; font-size:1.5rem; opacity:0.9;
+    position:absolute; top:-40px; font-size:var(--fs-xl); opacity:0.9;
     animation:rankUpEmojiFall linear forwards;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));
   }
@@ -214,7 +326,7 @@
     animation:rankUpCardPunch 0.5s cubic-bezier(.2,1.6,.3,1);
     background:rgba(12,6,24,0.88) !important;
     box-shadow:0 12px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08) !important;
-    border-radius:24px !important; padding:28px 24px !important;
+    border-radius:var(--r-lg) !important; padding:28px 24px !important;
   }
   @keyframes rankUpCardPunch{
     0%{ transform:scale(0.7); opacity:0; }
@@ -224,7 +336,7 @@
 
   .rankUpTransition{ position:relative; display:flex; align-items:center; justify-content:center; gap:12px; margin:6px 0 4px 0; min-height:70px; }
   .rankUpBadgeOld{
-    font-size:2.1rem; line-height:1;
+    font-size:var(--fs-3xl); line-height:1;
     animation:rankUpOldFade 0.7s ease 0.15s both;
   }
   @keyframes rankUpOldFade{
@@ -232,7 +344,7 @@
     100%{ opacity:0.4; filter:grayscale(0.7); transform:scale(0.8); }
   }
   .rankUpArrow{
-    font-size:1.3rem; color:var(--gold); font-weight:900;
+    font-size:var(--fs-xl); color:var(--gold); font-weight:900;
     opacity:0; animation:rankUpArrowIn 0.35s ease 0.35s both;
   }
   @keyframes rankUpArrowIn{ from{ opacity:0; transform:translateX(-6px); } to{ opacity:1; transform:translateX(0); } }
@@ -251,7 +363,7 @@
     100%{ width:100px; height:100px; opacity:0; }
   }
   .rankUpBadgeBig{
-    position:relative; font-size:3.6rem; line-height:1;
+    position:relative; font-size:var(--fs-5xl); line-height:1;
     animation:rankUpBadgeIn 0.6s cubic-bezier(.2,1.4,.4,1) 0.2s both, rankUpBadgeFloat 2.4s ease-in-out 0.9s infinite;
     filter:drop-shadow(0 0 18px rgba(255,220,150,0.6));
   }
@@ -265,14 +377,15 @@
     50%{ transform:translateY(-6px); }
   }
   .rankUpTitle{
-    font-size:1.6rem; font-weight:900; letter-spacing:3px; margin:4px 0 6px 0;
+    font-family:var(--font-display);
+    font-size:var(--fs-2xl); font-weight:900; letter-spacing:3px; margin:4px 0 6px 0;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan),var(--gold));
     background-size:300% auto;
     -webkit-background-clip:text; background-clip:text; color:transparent;
     animation:rankUpTitleShine 2.5s linear infinite;
   }
   @keyframes rankUpTitleShine{ from{ background-position:0% center; } to{ background-position:300% center; } }
-  .rankUpNewRankName{ font-size:1.15rem; font-weight:800; margin-bottom:20px; }
+  .rankUpNewRankName{ font-size:var(--fs-lg); font-weight:800; margin-bottom:20px; }
 
   .rankBarChart{
     display:flex; align-items:flex-end; justify-content:space-between; gap:5px;
@@ -283,9 +396,9 @@
     display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
     flex:1; height:100%; gap:5px; min-width:0;
   }
-  .rankBarValue{ font-size:0.56rem; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .rankBarValue{ font-size:var(--fs-xs); font-weight:800; color:var(--muted); white-space:nowrap; }
   .rankBar{
-    width:100%; max-width:32px; border-radius:6px 6px 0 0;
+    width:100%; max-width:32px; border-radius:var(--r-sm) 6px 0 0;
     background:rgba(255,255,255,0.12);
     transition:height 0.6s cubic-bezier(.2,.8,.3,1);
   }
@@ -294,31 +407,31 @@
     background:linear-gradient(180deg, var(--gold), var(--pink));
     box-shadow:0 0 14px rgba(255,207,92,0.6);
   }
-  .rankBarIcon{ font-size:1.05rem; line-height:1; }
-  .rankBarLabel{ font-size:0.52rem; font-weight:700; color:var(--muted); text-align:center; line-height:1.15; width:100%; word-break:break-word; overflow-wrap:break-word; hyphens:auto; }
+  .rankBarIcon{ font-size:var(--fs-md); line-height:1; }
+  .rankBarLabel{ font-size:var(--fs-xs); font-weight:700; color:var(--muted); text-align:center; line-height:1.15; width:100%; word-break:break-word; overflow-wrap:break-word; hyphens:auto; }
   .rankBarCol.current .rankBarLabel{ color:var(--gold); font-weight:900; }
 
   .rankDetailsHeader{ display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:18px; }
-  .rankDetailsBadge{ font-size:2.8rem; line-height:1; filter:drop-shadow(0 0 10px rgba(255,220,150,0.4)); }
+  .rankDetailsBadge{ font-size:var(--fs-4xl); line-height:1; filter:drop-shadow(0 0 10px rgba(255,220,150,0.4)); }
   .rankDetailsStats{ text-align:left; }
-  .rankDetailsScore{ font-size:1.3rem; font-weight:900; color:var(--gold); }
-  .rankDetailsPct{ font-size:0.85rem; color:var(--muted); font-weight:700; margin-top:2px; }
+  .rankDetailsScore{ font-size:var(--fs-xl); font-weight:900; color:var(--gold); }
+  .rankDetailsPct{ font-size:var(--fs-base); color:var(--muted); font-weight:700; margin-top:2px; }
 
   .rankLadder{ display:flex; flex-direction:column; gap:6px; max-height:340px; overflow-y:auto; }
   .rankRung{
-    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px;
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--r-md);
     background:rgba(255,255,255,0.04);
   }
   .rankRung.achieved{ background:rgba(255,255,255,0.08); }
   .rankRung.current{
-    background:linear-gradient(90deg, rgba(255,207,92,0.2), rgba(255,47,135,0.1));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
-  .rankRungIcon{ font-size:1.4rem; width:30px; text-align:center; flex-shrink:0; }
+  .rankRungIcon{ font-size:var(--fs-xl); width:30px; text-align:center; flex-shrink:0; }
   .rankRungInfo{ flex:1; text-align:left; min-width:0; }
-  .rankRungName{ font-weight:800; font-size:0.9rem; }
-  .rankRungPoints{ font-size:0.72rem; color:var(--muted); }
-  .rankRungStatus{ font-size:0.72rem; font-weight:800; flex-shrink:0; text-align:right; white-space:nowrap; }
+  .rankRungName{ font-weight:800; font-size:var(--fs-base); }
+  .rankRungPoints{ font-size:var(--fs-sm); color:var(--muted); }
+  .rankRungStatus{ font-size:var(--fs-sm); font-weight:800; flex-shrink:0; text-align:right; white-space:nowrap; }
   .rankRungStatus.locked{ color:var(--muted); }
   .rankRungStatus.achieved{ color:#3fd991; }
   .rankRungStatus.current{ color:var(--gold); }
@@ -326,7 +439,7 @@
   .themeUnlockRewardRow{ display:flex; justify-content:center; gap:12px; margin-bottom:18px; }
   .rewardChip{
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    width:82px; height:82px; border-radius:16px; gap:4px; flex-shrink:0;
+    width:82px; height:82px; border-radius:var(--r-lg); gap:4px; flex-shrink:0;
     background:rgba(255,255,255,0.03);
     animation:rewardChipIn 0.4s cubic-bezier(.2,1.4,.4,1) both;
   }
@@ -335,8 +448,8 @@
     60%{ transform:scale(1.1); opacity:1; }
     100%{ transform:scale(1); }
   }
-  .rewardChipIcon{ font-size:1.7rem; line-height:1; }
-  .rewardChipValue{ font-size:1rem; font-weight:900; }
+  .rewardChipIcon{ font-size:var(--fs-2xl); line-height:1; }
+  .rewardChipValue{ font-size:var(--fs-md); font-weight:900; }
   .rewardChip.rc-gem{ border:2px solid rgba(120,200,255,0.75); box-shadow:0 0 14px rgba(120,200,255,0.45), inset 0 0 10px rgba(120,200,255,0.12); }
   .rewardChip.rc-gem .rewardChipValue{ color:#6fc8ff; }
   .rewardChip.rc-bomb{ border:2px solid rgba(255,140,90,0.75); box-shadow:0 0 14px rgba(255,140,90,0.45), inset 0 0 10px rgba(255,140,90,0.12); }
@@ -345,95 +458,107 @@
   .rewardChip.rc-laser .rewardChipValue{ color:#ffdc64; }
 
   .themeUnlockSwatch{ display:flex; justify-content:center; gap:8px; margin:10px 0; }
-  .themeUnlockSwatch span{ width:32px; height:32px; border-radius:9px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.2); }
+  .themeUnlockSwatch span{ width:32px; height:32px; border-radius:var(--r-md); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.2); }
 
-  .highScoreCard .label{ font-size:0.75rem; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
-  .highScoreCard .value{ font-size:2.1rem; font-weight:800; color:var(--gold); }
+  .highScoreCard .label{ font-size:var(--fs-xs); letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+  .highScoreCard .value{ font-size:var(--fs-3xl); font-weight:800; color:var(--text); letter-spacing:-1px; }
 
   .rankProgressBar{
-    position:absolute; left:16px; right:16px; bottom:14px;
-    background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-    border-radius:14px; padding:10px 14px;
-    box-shadow:inset 0 0 0 1px rgba(255,207,92,0.3), 0 3px 10px rgba(0,0,0,0.25);
-    cursor:pointer; transition:transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
+    margin-top:12px; padding:0; background:none; border:none;
+    cursor:pointer; transition:opacity 0.12s ease;
   }
-  .rankProgressBar:active{
-    transform:scale(0.97);
-    background:linear-gradient(135deg, rgba(255,207,92,0.12), rgba(255,47,135,0.06));
-    box-shadow:inset 0 0 0 1px rgba(255,207,92,0.5), 0 1px 4px rgba(0,0,0,0.25);
-  }
-  .rankProgressLabels{ display:flex; justify-content:space-between; gap:8px; font-size:0.7rem; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .rankProgressBar:active{ opacity:0.65; }
+  .rankProgressLabels{ display:flex; justify-content:space-between; gap:8px; font-size:var(--fs-sm); font-weight:800; color:var(--text); margin-bottom:6px; }
   .rankProgressLabels span{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .rankProgressLabels span:last-child{ text-align:right; }
-  .rankProgressTrack{ height:7px; border-radius:6px; background:rgba(255,255,255,0.1); overflow:hidden; }
-  .rankProgressFill{ height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg,var(--gold),var(--pink)); transition:width 0.5s ease; }
-  .rankProgressText{ font-size:0.66rem; color:var(--muted); margin-top:5px; }
+  .rankProgressTrack{ height:7px; border-radius:var(--r-sm); background:rgba(255,255,255,0.1); overflow:hidden; }
+  .rankProgressFill{ height:100%; width:0%; border-radius:var(--r-sm); background:var(--accent); transition:width 0.5s ease; }
+  .rankProgressText{ font-size:var(--fs-xs); color:var(--muted); margin-top:5px; }
   .rankProgressText::after{ content:' ›'; color:var(--gold); font-weight:900; }
   .rankProgressBar.maxed .rankProgressFill{ background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan)); }
-  #menuGemLine{ font-size:0.85rem; color:var(--gold); font-weight:700; margin-bottom:16px; }
 
-  .modeSelector{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+  /* An explicit 3-across grid. Free-wrapping flex dropped the six modes as
+     4 + 2, which reads as an accident of the container width rather than a
+     layout; 3 x 2 is even and gives the longer labels room not to wrap. */
+  .modeSelector{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:10px; justify-items:stretch; }
+  #challengeModeSelector{ grid-template-columns:1fr; }
   .modeCard{
     font-family:inherit; border:none; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:4px;
     background:rgba(255,255,255,0.06); color:var(--muted);
-    border-radius:14px; padding:10px 8px; width:74px; font-size:1.3rem;
+    border-radius:var(--r-lg); padding:11px 8px; width:auto; font-size:var(--fs-xl);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
     transition:transform 0.12s ease;
   }
-  .modeCard span{ font-size:0.62rem; font-weight:800; color:var(--text); letter-spacing:0.3px; }
+  .modeCard .ico{ font-size:var(--fs-xl); color:var(--muted); }
+  /* Each mode gets its own colour at rest, not just when selected — six
+     identical grey icons in a row is the flattest-looking part of the whole
+     picker, and the modes are genuinely different experiences. :not(.active)
+     keeps this from fighting the "selected = accent" rule below, which needs
+     to win regardless of the mode's own colour. */
+  .modeCard:not(.active)[data-mode="classic"] .ico{ color:var(--accent); }
+  .modeCard:not(.active)[data-mode="timeattack"] .ico{ color:var(--cyan); }
+  .modeCard:not(.active)[data-mode="zen"] .ico{ color:var(--green); }
+  .modeCard:not(.active)[data-mode="daily"] .ico{ color:var(--gold); }
+  .modeCard:not(.active)[data-mode="pure"] .ico{ color:var(--pink); }
+  .modeCard:not(.active)[data-mode="duel"] .ico{ color:var(--red); }
+  .modeCard span:not(.ico){ font-size:var(--fs-xs); font-weight:800; color:var(--text); letter-spacing:0.3px; }
+  /* Solid tint + a single accent border. The old rule used a gold-to-pink
+     gradient, which is the exact decorative-gradient look the palette was
+     rebuilt to avoid. */
   .modeCard.active{
-    background:linear-gradient(160deg, rgba(255,207,92,0.28), rgba(255,47,135,0.16));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
     transform:translateY(-2px);
   }
-  .modeCard.active span{ color:var(--gold); }
+  .modeCard.active .ico{ color:var(--accent); }
+  .modeCard.active span:not(.ico){ color:var(--accent); }
   .modeCard.pressShake{ animation:modeCardPressShake 0.32s ease; }
   @keyframes modeCardPressShake{
-    0%{ transform:scale(1) translateX(0); }
-    15%{ transform:scale(0.94) translateX(-2px); }
-    35%{ transform:scale(0.94) translateX(2px); }
-    55%{ transform:scale(0.94) translateX(-1px); }
-    75%{ transform:scale(0.94) translateX(1px); }
-    100%{ transform:scale(1) translateX(0); }
+    0%{ transform:scale(1); }
+    38%{ transform:scale(0.95); }
+    100%{ transform:scale(1); }
   }
-  .modeDesc{ font-size:0.72rem; color:var(--muted); max-width:280px; text-align:center; margin-bottom:18px; min-height:28px; line-height:1.3; }
+  .modeDesc{ font-size:var(--fs-sm); color:var(--muted); max-width:280px; text-align:center; margin-bottom:18px; min-height:28px; line-height:1.3; }
 
   .timerBadge{
     display:flex; align-items:center; justify-content:center; gap:5px;
-    font-weight:900; font-size:1rem; color:var(--cyan); margin:2px 0 4px 0;
+    font-weight:900; font-size:var(--fs-md); color:var(--cyan); margin:2px 0 4px 0;
   }
   .timerBadge.urgent{ color:var(--red); animation:timerPulse 0.6s ease-in-out infinite; }
   @keyframes timerPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.12);} }
   #menuScreen .menuButtons{ display:flex; flex-direction:column; gap:14px; width:220px; }
 
-  #gameScreen{ display:none; width:100%; height:100%; flex-direction:column; align-items:center; }
+  /* Content was top-aligned, leaving all vertical slack below the tray — which
+     pushed the tray to mid-screen and out of comfortable thumb reach on tall
+     phones. Centring splits the slack so the tray sits lower. */
+  #gameScreen{ display:none; width:100%; height:100%; flex-direction:column; align-items:center; justify-content:center; }
   #topBar{ width:100%; display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
   .crownBadge{
-    display:flex; align-items:center; gap:5px; background:rgba(255,255,255,0.08);
-    border-radius:999px; padding:0 14px; height:34px; font-weight:800; color:var(--gold); font-size:0.9rem;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); flex-shrink:0; white-space:nowrap;
+    display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-md); padding:0 14px; height:34px; font-weight:800; color:var(--text); font-size:var(--fs-base);
+    flex-shrink:0; white-space:nowrap;
   }
 
   #scoreRow{ width:100%; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:2px; user-select:none; }
 
   #duelScoreBar{ width:100%; display:flex; align-items:center; justify-content:center; gap:12px; margin-top:2px; }
   .duelPlayerScore{
-    flex:1; max-width:150px; text-align:center; padding:8px 10px; border-radius:14px;
+    flex:1; max-width:150px; text-align:center; padding:8px 10px; border-radius:var(--r-lg);
     background:rgba(255,255,255,0.04); transition:background 0.3s ease, box-shadow 0.3s ease;
   }
   .duelPlayerScore.active{
-    background:linear-gradient(160deg, rgba(255,207,92,0.22), rgba(255,47,135,0.12));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
-  .duelPlayerLabel{ font-size:0.65rem; font-weight:800; color:var(--muted); letter-spacing:0.5px; text-transform:uppercase; }
+  .duelPlayerLabel{ font-size:var(--fs-xs); font-weight:800; color:var(--muted); letter-spacing:0.5px; text-transform:uppercase; }
   .duelPlayerScore.active .duelPlayerLabel{ color:var(--gold); }
-  .duelPlayerValue{ font-size:1.25rem; font-weight:900; color:var(--text); margin-top:2px; }
-  .duelVs{ font-size:1.05rem; flex-shrink:0; }
+  .duelPlayerValue{ font-size:var(--fs-lg); font-weight:900; color:var(--text); margin-top:2px; }
+  .duelVs{ font-size:var(--fs-md); flex-shrink:0; }
 
   #duelTurnBanner{
     position:fixed; left:0; right:0; top:38%; z-index:1350; pointer-events:none;
-    text-align:center; font-size:1.5rem; font-weight:900; color:var(--gold);
+    text-align:center; font-size:var(--fs-xl); font-weight:900; color:var(--gold);
     text-shadow:0 0 16px rgba(255,207,92,0.7), 0 2px 8px rgba(0,0,0,0.6);
     opacity:0;
   }
@@ -448,18 +573,18 @@
 
   .duelResultRow{ display:flex; gap:14px; justify-content:center; margin:14px 0 20px 0; }
   .duelResultCol{
-    flex:1; max-width:140px; padding:14px 10px; border-radius:14px;
+    flex:1; max-width:140px; padding:14px 10px; border-radius:var(--r-lg);
     background:rgba(255,255,255,0.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
   }
   .duelResultCol.winner{
-    background:linear-gradient(160deg, rgba(255,207,92,0.25), rgba(255,47,135,0.12));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.16);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
-  .duelResultLabel{ font-size:0.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
-  .duelResultScore{ font-size:1.6rem; font-weight:900; color:var(--gold); margin-top:4px; }
+  .duelResultLabel{ font-size:var(--fs-sm); font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .duelResultScore{ font-size:var(--fs-2xl); font-weight:900; color:var(--gold); margin-top:4px; }
   #score{
-    flex:1; min-width:0; text-align:center;
-    font-size:3.2rem; font-weight:900; line-height:1; cursor:pointer;
+    flex:1; min-width:0; text-align:center; font-family:var(--font-display);
+    font-size:var(--fs-4xl); font-weight:900; line-height:1; cursor:pointer;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
     -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 3px 10px rgba(0,0,0,0.5));
@@ -471,7 +596,7 @@
     35%{ transform:scale(var(--pulseScale, 1.4)); filter:drop-shadow(0 3px 10px rgba(0,0,0,0.5)) drop-shadow(0 0 26px rgba(255,194,51,0.95)); }
     100%{ transform:scale(1); filter:drop-shadow(0 3px 10px rgba(0,0,0,0.5)); }
   }
-  .scoreSpark{ position:fixed; z-index:1500; font-size:1.1rem; pointer-events:none; transform:translate(-50%,-50%) scale(0.5); opacity:0; }
+  .scoreSpark{ position:fixed; z-index:1500; font-size:var(--fs-lg); pointer-events:none; transform:translate(-50%,-50%) scale(0.5); opacity:0; }
   .scoreSpark.fly{ animation:scoreSparkFly 0.7s ease-out forwards; }
   @keyframes scoreSparkFly{
     0%{ transform:translate(-50%,-50%) scale(0.5); opacity:1; }
@@ -488,7 +613,7 @@
     22%{ opacity:1; transform:translate(-50%,-80%) scale(1.2); }
     100%{ opacity:0; transform:translate(-50%,-170%) scale(1); }
   }
-  .streakStat{ width:100%; text-align:center; margin-top:1px; font-size:0.78rem; font-weight:700; color:var(--text); --riskScale:1; }
+  .streakStat{ width:100%; display:flex; align-items:center; justify-content:center; gap:5px; margin-top:1px; font-size:var(--fs-sm); font-weight:700; color:var(--text); --riskScale:1; }
   .streakStat.risk-1{ --riskScale:1.08; animation:comboRiskShake 0.6s ease-in-out infinite; color:#ffe08a; }
   .streakStat.risk-2{ --riskScale:1.16; animation:comboRiskShake 0.42s ease-in-out infinite; color:#ffcf5c; }
   .streakStat.risk-3{ --riskScale:1.26; animation:comboRiskShake 0.28s ease-in-out infinite; color:#ff8a3d; }
@@ -500,7 +625,7 @@
   }
 
   .streakTitle{
-    width:100%; text-align:center; font-weight:900; font-size:0.85rem;
+    width:100%; text-align:center; font-family:var(--font-display); font-weight:900; font-size:var(--fs-base);
     letter-spacing:1px; margin-top:2px;
   }
   .streakTitle.streakTitlePop{ animation:streakTitlePop 0.4s cubic-bezier(.2,1.4,.4,1); }
@@ -533,24 +658,24 @@
     transition:transform 0.3s cubic-bezier(.2,1.4,.4,1), opacity 0.3s ease;
   }
   .comboLostPopup.show{ transform:translate(-50%,-50%) scale(1); opacity:1; }
-  .comboLostPopup.combo-lost-medium{ font-size:1.1rem; color:var(--muted); }
-  .comboLostPopup.combo-lost-big{ font-size:1.5rem; color:var(--red); text-shadow:0 0 14px rgba(255,59,92,0.6); }
-  .comboLostPopup.combo-lost-huge{ font-size:1.9rem; color:var(--red); text-shadow:0 0 20px rgba(255,59,92,0.75); }
-  .streakStat span{ color:var(--cyan); font-size:0.92rem; }
+  .comboLostPopup.combo-lost-medium{ font-size:var(--fs-lg); color:var(--muted); }
+  .comboLostPopup.combo-lost-big{ font-size:var(--fs-xl); color:var(--red); text-shadow:0 0 14px rgba(255,59,92,0.6); }
+  .comboLostPopup.combo-lost-huge{ font-size:var(--fs-2xl); color:var(--red); text-shadow:0 0 20px rgba(255,59,92,0.75); }
+  .streakStat span{ color:var(--cyan); font-size:var(--fs-base); }
   .streakStat.pulse span{ animation:comboPulse 0.35s ease; }
   @keyframes comboPulse{ 0%{ transform:scale(1.6); color:#fff;} 100%{ transform:scale(1); } }
 
   #board{
     position:relative;
     display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); gap:3px;
-    background:rgba(0,0,0,0.35); padding:7px; border-radius:16px;
-    box-shadow:inset 0 0 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05),
+    background:#0a0e14; padding:7px; border-radius:var(--r-md);
+    box-shadow:0 0 0 1px var(--line),
       0 0 var(--comboGlowBlur,0px) var(--comboGlowSpread,0px) rgba(255,207,92,var(--comboGlowAlpha,0));
     margin-top:3px;
     transition:box-shadow 0.45s ease;
     /* width/height are set explicitly in px by fitBoard() in JS, guaranteeing a true square */
   }
-  .cell{ border-radius:7px; background:rgba(255,255,255,0.045); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04); position:relative; transition:background 0.06s ease; }
+  .cell{ border-radius:var(--r-sm); background:#161d27; position:relative; transition:background 0.06s ease; }
   .cell.filled{ box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), inset 0 -3px 4px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.15); animation:popIn 0.3s cubic-bezier(.25,.9,.3,1.1); }
   @keyframes popIn{
     0%{ transform:scale(0.4,0.4); }
@@ -591,7 +716,7 @@
   @keyframes miniFlashPop{ 0%{ opacity:0.95; transform:translate(-50%,-50%) scale(0.25); } 100%{ opacity:0; transform:translate(-50%,-50%) scale(1); } }
   .scorePopup{
     position:absolute; pointer-events:none; white-space:nowrap; z-index:60;
-    font-weight:900; font-size:1.35rem; opacity:0;
+    font-weight:900; font-size:var(--fs-xl); opacity:0;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
     -webkit-background-clip:text; background-clip:text; color:transparent;
     -webkit-text-stroke:0.5px rgba(0,0,0,0.3);
@@ -617,27 +742,40 @@
   .board-shake{ animation:boardShake 0.32s ease; }
   @keyframes boardShake{ 0%,100%{transform:translate(0,0);} 20%{transform:translate(-5px,3px);} 40%{transform:translate(4px,-4px);} 60%{transform:translate(-4px,4px);} 80%{transform:translate(3px,-2px);} }
 
-  #tray{ width:100%; display:flex; justify-content:space-around; align-items:center; background:var(--panel); border-radius:14px; margin-top:5px; padding:5px 4px; min-height:66px; }
+  .holdSlot{
+    position:relative; display:flex; align-items:center; justify-content:center;
+    min-width:52px; touch-action:none;
+  }
+  .holdSlot.isEmpty .holdPieceView{ display:none; }
+  .holdSlot:not(.isEmpty) .holdLabel{ display:none; }
+  .holdLabel{ font-size:var(--fs-xs); letter-spacing:0.8px; color:var(--muted); font-weight:700; }
+  .holdSlot.canDrop .holdLabel{ color:var(--accent); }
+  .holdSlot.canDrop{ box-shadow:inset 0 0 0 2px var(--accent); border-radius:var(--r-md); }
+  .holdPieceView{ display:grid; gap:1px; }
+  .holdPieceView .pcell{ border-radius:2px; }
+  .holdSlot.disabled{ opacity:0.35; pointer-events:none; }
+
+  #tray{ width:100%; display:flex; justify-content:space-around; align-items:center; background:var(--panel); border-radius:var(--r-lg); margin-top:5px; padding:5px 4px; min-height:66px; }
   .traySlot{ display:grid; gap:2px; touch-action:none; min-width:50px; min-height:50px; align-content:center; justify-content:center; }
   /* Note: grid-template-columns/rows are set in JS using a fixed pixel cell size (not 1fr),
      so the slot's box now sizes itself to fit the piece's real shape instead of the piece
      being stretched to fill a fixed square. */
-  .traySlot .pcell{ border-radius:5px; }
+  .traySlot .pcell{ border-radius:var(--r-sm); }
   .traySlot.empty{ visibility:hidden; }
 
   #inventoryBar{
     width:100%; display:flex; align-items:center; gap:8px;
     background:rgba(255,255,255,0.04); border:1px solid rgba(255,207,92,0.25);
-    border-radius:12px; margin-top:5px; padding:4px 9px;
+    border-radius:var(--r-md); margin-top:5px; padding:4px 9px;
   }
-  .invLabel{ font-size:0.6rem; color:var(--muted); margin-left:auto; text-align:right; line-height:1.1; }
+  .invLabel{ font-size:var(--fs-xs); color:var(--muted); margin-left:auto; text-align:right; line-height:1.1; }
   .invSlot{
-    display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:9px;
+    display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:var(--r-md);
     background:rgba(255,255,255,0.06); touch-action:none; box-shadow:inset 0 0 0 1px rgba(255,207,92,0.3);
   }
   .invSlot.disabled{ opacity:0.3; box-shadow:none; }
-  .invIcon{ font-size:1.05rem; }
-  .invCount{ font-weight:800; font-size:0.8rem; color:var(--gold); }
+  .invIcon{ font-size:var(--fs-md); }
+  .invCount{ font-weight:800; font-size:var(--fs-sm); color:var(--gold); }
 
   #msg{ display:none; }
 
@@ -901,11 +1039,11 @@
   #ghost{ position:fixed; left:0; top:0; pointer-events:none; z-index:999; display:grid; gap:3px; opacity:0.92; will-change:transform; }
   #ghost.ghostGrab{ animation:ghostGrabPop 0.16s ease-out; }
   @keyframes ghostGrabPop{ 0%{ opacity:0.4; } 100%{ opacity:0.92; } }
-  #ghost .gcell{ border-radius:7px; }
+  #ghost .gcell{ border-radius:var(--r-sm); }
 
   #multiplierPopup{
     position:fixed; top:40%; left:50%; transform:translate(-50%,-50%) scale(0.5);
-    font-size:3rem; font-weight:900; color:var(--gold); text-shadow:0 4px 20px rgba(0,0,0,0.6);
+    font-size:var(--fs-4xl); font-weight:900; color:var(--gold); text-shadow:0 4px 20px rgba(0,0,0,0.6);
     opacity:0; pointer-events:none; z-index:1500;
   }
   #multiplierPopup.show{ animation:multiPop 0.7s ease forwards; }
@@ -923,17 +1061,12 @@
   }
   .overlay.show{ opacity:1; pointer-events:auto; backdrop-filter:blur(4px); }
   .modalCard{
-    background:linear-gradient(165deg, rgba(255,255,255,0.07), var(--panel2) 45%);
-    border-radius:22px; padding:28px 24px 24px 24px; max-width:340px; width:100%; text-align:center;
-    box-shadow:0 14px 44px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.09);
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg); padding:24px 22px 22px 22px; max-width:340px; width:100%; text-align:center;
+    box-shadow:0 18px 50px rgba(0,0,0,0.6);
     max-height:82vh; overflow-y:auto; position:relative;
     opacity:0; transform:translate(var(--originDX,0px), var(--originDY,0px)) scale(0.1);
-  }
-  .modalCard::before{
-    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:56px; height:4px; border-radius:0 0 5px 5px;
-    background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-    box-shadow:0 0 10px rgba(255,207,92,0.5);
   }
   .overlay.show .modalCard{ animation:modalPopIn 0.4s cubic-bezier(.2,1.25,.35,1) forwards; }
   .overlay.closing .modalCard{ animation:modalPopOut 0.2s ease-in forwards; }
@@ -964,18 +1097,25 @@
     0%{ opacity:1; transform:translate(0,0) scale(1); }
     100%{ opacity:0; transform:translate(var(--originDX,0px), var(--originDY,0px)) scale(0.1); }
   }
-  .modalCard h2{ margin:6px 0 10px 0; font-size:1.3rem; letter-spacing:0.3px; text-shadow:0 2px 12px rgba(0,0,0,0.3); }
-  .modalCard p{ margin:0 0 18px 0; color:var(--muted); font-size:0.9rem; line-height:1.4; }
-  .modalCard .modalScore{ font-size:2rem; font-weight:800; color:var(--gold); margin-bottom:4px; }
+  .modalCard h2{ margin:6px 0 10px 0; font-family:var(--font-display); font-size:var(--fs-xl); font-weight:800; letter-spacing:0.3px; text-shadow:0 2px 12px rgba(0,0,0,0.3); }
+  .modalCard p{ margin:0 0 18px 0; color:var(--muted); font-size:var(--fs-base); line-height:1.4; }
+  .modalCard .modalScore{ font-size:var(--fs-3xl); font-weight:800; color:var(--gold); margin-bottom:4px; }
   .modalCard .modalButtons{ display:flex; flex-direction:column; gap:10px; }
   .modalCard.wide{ max-width:400px; }
 
-  .settingsRow{ display:flex; align-items:center; justify-content:space-between; padding:12px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.95rem; }
+  .settingsRow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:var(--fs-md); }
+  /* Label + icon share one flex line so every row's text starts on the same
+     x, which is what stops a settings list from looking ragged. */
+  .settingsRow > span:first-child{ display:flex; align-items:center; gap:11px; min-width:0; }
+  .settingsRow .ico{ color:var(--muted); font-size:1.05em; flex-shrink:0; }
   .settingsRow:last-of-type{ border-bottom:none; }
   .switch{ position:relative; width:46px; height:26px; flex-shrink:0; }
   .switch input{ opacity:0; width:0; height:0; }
-  .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.15); border-radius:999px; transition:0.2s; }
+  .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.15); border-radius:var(--r-lg); transition:0.2s; }
   .slider::before{ content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:white; border-radius:50%; transition:0.2s; }
+  /* Green means "on" in virtually every app a player has ever used — fighting
+     that convention for the sake of a one-accent rule makes the settings
+     screen harder to scan, not more tasteful. */
   input:checked + .slider{ background:var(--green); }
   input:checked + .slider::before{ transform:translateX(20px); }
 
@@ -983,53 +1123,90 @@
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
   /* ---------- Challenges ---------- */
-  .challengeSectionTitle{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; text-align:left; font-size:0.75rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:14px 0 6px 0; }
+  .challengeSectionTitle{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; text-align:left; font-size:var(--fs-sm); letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:14px 0 6px 0; }
   .challengeSectionTitle:first-of-type{ margin-top:0; }
-  .countdownText{ font-size:0.72rem; color:var(--cyan); font-weight:700; letter-spacing:0; text-transform:none; white-space:nowrap; }
+  .countdownText{ font-size:var(--fs-sm); color:var(--cyan); font-weight:700; letter-spacing:0; text-transform:none; white-space:nowrap; }
   .challengeItem{
-    background:linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border-radius:14px; padding:13px; margin-bottom:10px; text-align:left;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.07);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-md); padding:13px; margin-bottom:8px; text-align:left;
   }
   .challengeItem.completed{ box-shadow:inset 0 0 0 1px rgba(63,217,145,0.35); }
-  .challengeDesc{ font-size:0.88rem; font-weight:600; margin-bottom:6px; }
+  .challengeDesc{ font-size:var(--fs-base); font-weight:600; margin-bottom:6px; }
   .challengeProgressRow{ display:flex; align-items:center; gap:8px; }
-  .challengeProgressBar{ flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,0.1); overflow:hidden; }
+  .challengeProgressBar{ flex:1; height:8px; border-radius:var(--r-lg); background:rgba(255,255,255,0.1); overflow:hidden; }
   .challengeProgressFill{ height:100%; background:linear-gradient(90deg,var(--cyan),var(--pink)); box-shadow:0 0 8px rgba(29,233,255,0.5); }
-  .challengeProgressText{ font-size:0.7rem; color:var(--muted); white-space:nowrap; }
+  .challengeProgressText{ font-size:var(--fs-sm); color:var(--muted); white-space:nowrap; }
   .challengeFooter{ display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
-  .challengeReward{ font-size:0.82rem; color:var(--gold); font-weight:700; }
-  .claimBtn{ padding:6px 16px; font-size:0.78rem; border-radius:999px; }
+  .challengeReward{ font-size:var(--fs-base); color:var(--gold); font-weight:700; }
+  .claimBtn{ padding:6px 16px; font-size:var(--fs-sm); border-radius:var(--r-lg); }
   .claimBtn.claimed{ background:rgba(91,227,138,0.25); color:var(--green); box-shadow:inset 0 0 0 1px rgba(91,227,138,0.4); }
 
   /* ---------- Shop ---------- */
-  .shopGemBar{ display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(255,255,255,0.06); border-radius:999px; padding:8px 20px; font-weight:800; color:var(--gold); font-size:1.05rem; margin-bottom:16px; }
-  .shopSectionTitle{ text-align:left; font-size:0.75rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:16px 0 8px 0; }
+  .shopGemBar{ display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(255,255,255,0.06); border-radius:var(--r-lg); padding:8px 20px; font-weight:800; color:var(--gold); font-size:var(--fs-md); margin-bottom:16px; }
+  .shopSectionTitle{ text-align:left; font-size:var(--fs-sm); letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:16px 0 8px 0; }
   .shopSectionTitle:first-of-type{ margin-top:0; }
   .themeTryCard{ position:relative; padding-top:38px; }
   .themeTryCloseBtn{
-    position:absolute; top:12px; right:12px; width:36px; height:36px; font-size:1rem;
+    position:absolute; top:12px; right:12px; width:36px; height:36px; font-size:var(--fs-md);
     z-index:1;
   }
   .themeTryBoard{
     display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); gap:3px;
-    background:rgba(0,0,0,0.35); padding:7px; border-radius:16px;
+    background:rgba(0,0,0,0.35); padding:7px; border-radius:var(--r-lg);
     box-shadow:inset 0 0 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);
     width:260px; height:260px; margin:8px auto 12px auto;
   }
-  .themeTryHint{ font-size:0.75rem; color:var(--muted); margin-top:-2px; }
+  .themeTryHint{ font-size:var(--fs-sm); color:var(--muted); margin-top:-2px; }
   .themeCardTryBtn{
     position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
     background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center;
-    font-size:0.78rem; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15);
+    font-size:var(--fs-sm); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15);
   }
   .themeCardTryBtn:active{ transform:scale(0.9); }
 
+  /* Fills what was a large dead gap between the Play button and the rank bar,
+     and surfaces lifetime stats that were previously tracked but never shown. */
+  .menuStatsStrip{
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%;
+    margin-top:16px; padding:12px 4px 10px 4px; border:none;
+    border-top:1px solid var(--line); background:none;
+    cursor:pointer; transition:opacity 0.12s ease;
+  }
+  .menuStatsStrip:active{ opacity:0.65; }
+  .menuStatItem{ display:flex; flex-direction:column; align-items:center; min-width:52px; }
+  .menuStatValue{ font-size:var(--fs-md); font-weight:900; color:var(--text); }
+  .menuStatLabel{ font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-top:1px; }
+  .menuStatDivider{ width:1px; height:22px; background:rgba(255,255,255,0.12); }
+  /* Muted, not amber. Amber is the "press this" colour and a decorative
+     affordance chevron should not compete with the Play button for it. */
+  .menuStatsChevron{ color:var(--muted); font-weight:700; font-size:var(--fs-md); margin-left:2px; align-self:center; }
+
+  .statsGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
+  .statCard{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-md); padding:10px 8px; text-align:center;
+  }
+  .statCardValue{ font-size:var(--fs-lg); font-weight:900; color:var(--gold); }
+  .statCardLabel{ font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  .historyRow{
+    display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-md); text-align:left;
+  }
+  .historyRow.isBest{ box-shadow:inset 0 0 0 1px rgba(255,207,92,0.45); }
+  .historyRank{ flex:0 0 22px; font-size:var(--fs-sm); font-weight:900; color:var(--muted); }
+  .historyRow.isBest .historyRank{ color:var(--gold); }
+  .historyMain{ flex:1; min-width:0; }
+  .historyScore{ font-size:var(--fs-md); font-weight:800; }
+  .historyMeta{ font-size:var(--fs-xs); color:var(--muted); margin-top:1px; }
+  .historyEmpty{ font-size:var(--fs-sm); color:var(--muted); padding:14px 4px; }
+
   .themeGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
   .themeCard{
-    background:linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border-radius:14px; padding:12px 10px; display:flex; flex-direction:column;
-    align-items:center; gap:7px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-md); padding:12px 10px; display:flex; flex-direction:column;
+    align-items:center; gap:7px;
     position:relative;
   }
   .themeCard.selected{
@@ -1038,32 +1215,32 @@
   }
   .themeCard .btn:active{ transform:scale(0.96); }
   .themeCardSwatch{ display:flex; gap:3px; }
-  .themeCardSwatch span{ width:20px; height:20px; border-radius:6px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
-  .themeCardName{ font-size:0.76rem; font-weight:800; text-align:center; line-height:1.25; min-height:2.4em; display:flex; align-items:center; }
+  .themeCardSwatch span{ width:20px; height:20px; border-radius:var(--r-sm); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
+  .themeCardName{ font-size:var(--fs-sm); font-weight:800; text-align:center; line-height:1.25; min-height:2.4em; display:flex; align-items:center; }
   .themeCard .btn{ width:100%; }
 
-  .shopRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.05); border-radius:14px; padding:10px 14px; margin-bottom:8px; text-align:left; }
+  .shopRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.05); border-radius:var(--r-lg); padding:10px 14px; margin-bottom:8px; text-align:left; }
   .shopRow .shopInfo{ flex:1; min-width:0; }
-  .shopRow .shopTitle{ font-weight:700; font-size:0.92rem; }
-  .shopRow .shopSub{ font-size:0.72rem; color:var(--muted); margin-top:2px; }
+  .shopRow .shopTitle{ font-weight:700; font-size:var(--fs-base); }
+  .shopRow .shopSub{ font-size:var(--fs-sm); color:var(--muted); margin-top:2px; }
   .shopRow button{ flex-shrink:0; }
   .skinSwatch{ display:flex; gap:3px; margin-top:6px; }
   .skinSwatch span{ width:14px; height:14px; border-radius:4px; display:inline-block; }
 
   /* ---------- Daily rewards card carousel ---------- */
-  .loginDayCardsRow{ display:flex; gap:8px; overflow-x:auto; padding:8px 2px 12px 2px; -webkit-overflow-scrolling:touch; }
-  .loginDayCard{ flex-shrink:0; width:76px; background:rgba(255,255,255,0.05); border-radius:12px; padding:10px 6px; text-align:center; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); }
-  .loginDayCard.claimable{ background:linear-gradient(160deg, rgba(255,207,92,0.28), rgba(255,107,157,0.16)); box-shadow:inset 0 0 0 2px var(--gold); animation:pipPulse 1.2s ease-in-out infinite; }
-  .loginDayCard .dayNum{ font-size:0.64rem; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; }
-  .loginDayCard.claimable .dayNum{ color:var(--gold); }
-  .loginDayCard .dayRewards{ font-size:0.74rem; font-weight:700; line-height:1.6; color:var(--text); }
+  .loginDayCardsRow{ display:grid; grid-template-columns:repeat(4, 1fr); gap:7px; padding:8px 0 12px 0; }
+  .loginDayCard{ min-width:0; background:var(--panel); border:1px solid var(--line); border-radius:var(--r-md); padding:9px 4px; text-align:center; }
+  .loginDayCard.claimable{ background:rgba(240,145,58,0.14); border-color:var(--accent); animation:pipPulse 1.2s ease-in-out infinite; }
+  .loginDayCard .dayNum{ font-size:var(--fs-xs); color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; }
+  .loginDayCard.claimable .dayNum{ color:var(--accent); }
+  .loginDayCard .dayRewards{ font-size:var(--fs-sm); font-weight:700; line-height:1.6; color:var(--text); }
 
   /* Combo helper pieces are intentionally NOT visually flagged — the assist stays invisible. */
   .traySlot{ position:relative; }
 
   /* ---------- Gem-in-block ---------- */
   .cell.has-gem::before{
-    content:""; position:absolute; inset:0; border-radius:7px;
+    content:""; position:absolute; inset:0; border-radius:var(--r-sm);
     background:radial-gradient(circle, rgba(120,235,255,0.55), rgba(79,227,255,0.15) 55%, transparent 75%);
     animation:gemBgPulse 1.1s ease-in-out infinite;
   }
@@ -1077,7 +1254,7 @@
   @keyframes gemShimmer{ 0%,100%{ opacity:0.9; transform:translate(-50%,-50%) scale(1);} 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.35);} }
   .gemPopup{
     position:absolute; pointer-events:none; white-space:nowrap; z-index:65;
-    font-weight:900; font-size:1.1rem; opacity:0; color:var(--cyan);
+    font-weight:900; font-size:var(--fs-lg); opacity:0; color:var(--cyan);
     text-shadow:0 2px 6px rgba(0,0,0,0.5), 0 0 10px rgba(79,227,255,0.6);
     transform:translate(-50%,-50%) scale(0.4);
   }
@@ -1093,7 +1270,7 @@
 
   /* ---------- Login streak pips ---------- */
   .streakPips{ display:flex; justify-content:center; gap:6px; margin:10px 0 12px 0; flex-wrap:wrap; }
-  .streakPip{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; background:rgba(255,255,255,0.08); color:var(--muted); flex-shrink:0; }
+  .streakPip{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:var(--fs-sm); font-weight:800; background:rgba(255,255,255,0.08); color:var(--muted); flex-shrink:0; }
   .streakPip.done{ background:rgba(91,227,138,0.28); color:var(--green); }
   .streakPip.current{ background:linear-gradient(135deg,var(--gold),var(--pink)); color:#20143a; animation:pipPulse 1s ease-in-out infinite; }
   @keyframes pipPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.15);} }
@@ -1105,7 +1282,7 @@
   /* ---------- Milestone celebration ---------- */
   .milestoneBanner{
     position:fixed; top:32%; left:50%; transform:translate(-50%,-50%) scale(0.4);
-    z-index:2000; font-size:1.7rem; font-weight:900; text-align:center; pointer-events:none; opacity:0;
+    z-index:2000; font-size:var(--fs-2xl); font-weight:900; text-align:center; pointer-events:none; opacity:0;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
     -webkit-background-clip:text; background-clip:text; color:transparent;
     -webkit-text-stroke:0.6px rgba(0,0,0,0.3);
@@ -1147,7 +1324,7 @@
     z-index:2101; text-align:center; pointer-events:none; opacity:0;
   }
   .perfectClearBanner .pcTitle{
-    font-size:2.1rem; font-weight:900; white-space:nowrap;
+    font-size:var(--fs-3xl); font-weight:900; white-space:nowrap;
     background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan),var(--gold));
     background-size:300% 100%;
     -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -1156,7 +1333,7 @@
     animation:rainbowShift 1s linear infinite;
   }
   .perfectClearBanner .pcBonus{
-    font-size:1.4rem; font-weight:900; color:var(--gold); margin-top:6px;
+    font-size:var(--fs-xl); font-weight:900; color:var(--gold); margin-top:6px;
     filter:drop-shadow(0 3px 8px rgba(0,0,0,0.6));
   }
   @keyframes rainbowShift{ 0%{ background-position:0% 50%; } 100%{ background-position:300% 50%; } }
@@ -1171,12 +1348,14 @@
 
   /* ---------- Ambient background life ---------- */
   #ambientBg{ position:fixed; inset:0; z-index:1; overflow:hidden; pointer-events:none; }
-  #supernovaCanvas{ position:fixed; inset:0; z-index:-4; pointer-events:none; display:none; }
+  /* width/height 100% ensures the reduced-resolution backing store always
+     stretches to fill the screen rather than rendering at its smaller size. */
+  #supernovaCanvas{ position:fixed; inset:0; width:100%; height:100%; z-index:-4; pointer-events:none; display:none; }
   #supernovaParticleCanvas{ position:fixed; inset:0; z-index:-3; pointer-events:none; display:none; }
   body[data-skin="rankSupernova"] #supernovaCanvas,
   body[data-skin="rankSupernova"] #supernovaParticleCanvas{ display:block; }
 
-  #singularityShaderCanvas{ position:fixed; inset:0; z-index:-4; pointer-events:none; display:none; }
+  #singularityShaderCanvas{ position:fixed; inset:0; width:100%; height:100%; z-index:-4; pointer-events:none; display:none; }
   #singularityParticleCanvas{ position:fixed; inset:0; z-index:-3; pointer-events:none; display:none; }
   body[data-skin="singularity"] #singularityShaderCanvas,
   body[data-skin="singularity"] #singularityParticleCanvas{ display:block; }
@@ -1253,16 +1432,18 @@
       linear-gradient(rgba(255,70,15,var(--tensionEdgeAlpha,0)), transparent 26%),
       linear-gradient(to top, rgba(255,70,15,var(--tensionEdgeAlpha,0)), transparent 26%);
   }
-  #tensionWarningToast{
+  /* Shared by every one-time "here's what that means" explainer toast —
+     tension warning and combo-risk warning both use this. */
+  .infoToast{
     position:fixed; top:14px; left:50%; z-index:1500; max-width:87%;
-    background:rgba(18,10,32,0.96); border-radius:14px; padding:11px 16px;
+    background:rgba(18,10,32,0.96); border-radius:var(--r-lg); padding:11px 16px;
     box-shadow:0 8px 22px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,170,70,0.35);
-    font-size:0.78rem; color:var(--text); text-align:center; line-height:1.4;
+    font-size:var(--fs-sm); color:var(--text); text-align:center; line-height:1.4;
     opacity:0; pointer-events:none;
     transform:translate(-50%,-14px);
     transition:opacity 0.35s ease, transform 0.35s ease;
   }
-  #tensionWarningToast.show{ opacity:1; transform:translate(-50%,0); }
+  .infoToast.show{ opacity:1; transform:translate(-50%,0); }
   #tensionOverlay.pulse{ animation:tensionPulse var(--tensionPulseDur,3s) ease-in-out infinite; }
   @keyframes tensionPulse{
     0%,100%{ filter:brightness(1) saturate(1); }
@@ -1316,7 +1497,35 @@
     100%{ transform:translate3d(var(--driftX,0px), -115vh, 0); opacity:0; }
   }
 
-  /* ---------- Screen transitions ---------- */
+  /* ---------- Boot loader & screen transitions ---------- */
+  #bootLoader{
+    position:fixed; inset:0; z-index:99998; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:14px;
+    background:var(--bg2);
+    transition:opacity 0.45s ease, visibility 0.45s ease;
+  }
+  #bootLoader.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  .bootTitle{ font-size:var(--fs-2xl); font-weight:800; letter-spacing:-0.5px; color:var(--text); }
+  .bootTitle span{ color:var(--accent); }
+  .bootBarTrack{
+    width:150px; height:5px; border-radius:var(--r-lg); overflow:hidden;
+    background:rgba(255,255,255,0.12);
+  }
+  .bootBarFill{
+    height:100%; width:0%; border-radius:var(--r-lg);
+    background:var(--accent);
+    transition:width 0.35s cubic-bezier(.3,.8,.4,1);
+  }
+
+  /* Sits above screen content but below overlays (z-index:1000), so a screen
+     swap happens hidden behind it instead of as a visible hard cut. */
+  #transitionVeil{
+    position:fixed; inset:0; z-index:990; pointer-events:none;
+    background:var(--bg2);
+    opacity:0; transition:opacity 0.18s ease;
+  }
+  #transitionVeil.active{ opacity:1; }
+
   .screenEnter{ animation:screenFadeIn 0.38s cubic-bezier(.2,.7,.3,1); }
   @keyframes screenFadeIn{
     0%{ opacity:0; transform:scale(0.96) translateY(8px); }
@@ -1333,13 +1542,8 @@
   /* ---------- Board idle life ---------- */
   .cell:not(.filled){ position:relative; }
   .cell:not(.filled)::before{
-    content:'';
-    position:absolute; inset:0;
-    border-radius:inherit;
-    background:#fff;
-    opacity:0;
-    animation:cellIdleBreathe 4.5s ease-in-out infinite;
-    pointer-events:none;
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background:#fff; opacity:0; pointer-events:none;
   }
   @keyframes cellIdleBreathe{
     0%,100%{ opacity:0; }
@@ -1357,21 +1561,21 @@
 
   /* ---------- Next-piece preview ---------- */
   .nextPreview{ margin-left:auto; display:flex; align-items:center; gap:6px; }
-  .nextLabel{ font-size:0.55rem; letter-spacing:1.5px; color:var(--muted); font-weight:800; }
+  .nextLabel{ font-size:var(--fs-xs); letter-spacing:1.5px; color:var(--muted); font-weight:800; }
   .nextGrid{ display:grid; gap:1px; opacity:0.75; }
   .nextGrid div{ border-radius:2px; }
 
   /* ---------- Undo button ---------- */
   .undoSlot{ font-family:inherit; border:none; cursor:pointer; color:var(--text); }
-  .undoSlot .invCount{ font-size:0.72rem; color:var(--text); }
+  .undoSlot .invCount{ font-size:var(--fs-sm); color:var(--text); }
   .undoSlot:disabled{ opacity:0.3; box-shadow:none; }
   .undoSlot:active:not(:disabled){ transform:translateY(1px); }
 
   /* ---------- Session recap ---------- */
   .recapGrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0 14px 0; }
-  .recapItem{ background:rgba(255,255,255,0.06); border-radius:10px; padding:8px 4px; }
-  .recapVal{ font-size:1.15rem; font-weight:900; color:var(--cyan); line-height:1.1; }
-  .recapLbl{ font-size:0.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }  /* ---------- Accessibility: respect the OS "reduce motion" setting ----------
+  .recapItem{ background:rgba(255,255,255,0.06); border-radius:var(--r-md); padding:8px 4px; }
+  .recapVal{ font-size:var(--fs-lg); font-weight:900; color:var(--cyan); line-height:1.1; }
+  .recapLbl{ font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }  /* ---------- Accessibility: respect the OS "reduce motion" setting ----------
      Some people get migraines or motion sickness from heavy animation, and this
      game has a lot of it. This keeps everything fully playable and readable —
      state changes still happen instantly, colours and layout are untouched —
@@ -1379,6 +1583,7 @@
      transitions are deliberately kept (they don't trigger vestibular issues)
      so overlays don't snap in jarringly. */
   @media (prefers-reduced-motion: reduce){
+    #transitionVeil{ display:none !important; }
     *, *::before, *::after{
       animation-duration:0.01ms !important;
       animation-iteration-count:1 !important;
@@ -1404,30 +1609,30 @@
   #devConsole{
     position:fixed; top:80px; left:20px; z-index:99999;
     width:240px; background:rgba(8,14,8,0.96); border:1px solid #3fff6b;
-    border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(63,255,107,0.15);
-    font-family:'Courier New', monospace; color:#3fff6b; font-size:0.75rem;
+    border-radius:var(--r-md); box-shadow:0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(63,255,107,0.15);
+    font-family:'Courier New', monospace; color:#3fff6b; font-size:var(--fs-sm);
     user-select:none;
   }
   #devConsoleHeader{
     display:flex; justify-content:space-between; align-items:center;
-    padding:8px 10px; background:rgba(63,255,107,0.12); border-radius:10px 10px 0 0;
+    padding:8px 10px; background:rgba(63,255,107,0.12); border-radius:var(--r-md) 10px 0 0;
     cursor:grab; border-bottom:1px solid rgba(63,255,107,0.3);
     font-weight:700; letter-spacing:0.5px; touch-action:none;
   }
   #devConsoleHeader:active{ cursor:grabbing; }
   #closeDevConsoleBtn{
-    background:none; border:none; color:#3fff6b; font-size:1rem; cursor:pointer; padding:0 4px; line-height:1;
+    background:none; border:none; color:#3fff6b; font-size:var(--fs-md); cursor:pointer; padding:0 4px; line-height:1;
   }
   #devConsoleBody{ padding:10px; display:flex; flex-direction:column; gap:8px; }
   .devRow{ display:flex; align-items:center; gap:6px; }
-  .devRow label{ flex:0 0 44px; font-size:0.7rem; opacity:0.85; }
+  .devRow label{ flex:0 0 44px; font-size:var(--fs-sm); opacity:0.85; }
   .devRow input{
     flex:1; min-width:0; background:rgba(63,255,107,0.08); border:1px solid rgba(63,255,107,0.3);
-    border-radius:5px; color:#3fff6b; padding:5px 6px; font-family:inherit; font-size:16px;
+    border-radius:var(--r-sm); color:#3fff6b; padding:5px 6px; font-family:inherit; font-size:16px;
   }
   .devRow button, .devRowFull button{
     background:rgba(63,255,107,0.15); border:1px solid rgba(63,255,107,0.5); color:#3fff6b;
-    border-radius:5px; padding:5px 9px; font-size:0.68rem; font-family:inherit; cursor:pointer; white-space:nowrap;
+    border-radius:var(--r-sm); padding:5px 9px; font-size:var(--fs-xs); font-family:inherit; cursor:pointer; white-space:nowrap;
   }
   .devRow button:active, .devRowFull button:active{ background:rgba(63,255,107,0.3); }
   .devRowFull{ display:flex; }
@@ -1438,6 +1643,11 @@
 </style>
 </head>
 <body>
+<div id="bootLoader">
+  <div class="bootTitle">BIG <span>BLAST</span></div>
+  <div class="bootBarTrack"><div class="bootBarFill" id="bootBarFill"></div></div>
+</div>
+<div id="transitionVeil"></div>
 <div id="ambientBg"></div>
 <canvas id="supernovaCanvas"></canvas>
 <canvas id="supernovaParticleCanvas"></canvas>
@@ -1451,74 +1661,90 @@
 
   <div id="menuScreen">
     <div class="topRow">
-      <button class="iconBtn" id="dailyRewardsBtnMenu">🎁<span class="badgeDot" id="loginBadge"></span></button>
-      <button class="iconBtn" id="challengesBtnMenu">🎯<span class="badgeDot" id="challengeBadge"></span></button>
-      <button class="iconBtn" id="achievementsBtnMenu">🏆<span class="badgeDot" id="achievementBadge"></span></button>
-      <button class="iconBtn" id="themesBtnMenu">🎨</button>
-      <button class="iconBtn" id="shopBtnMenu">🛒</button>
-      <button class="iconBtn" id="settingsBtnMenu">⚙️</button>
+      <div class="gemPillMenu" id="menuGemPill">
+        <span class="ico" data-icon="gem"></span>
+        <span id="menuGemCount">0</span>
+      </div>
     </div>
-    <h1>💥 BIG BLAST</h1>
-    <div class="tagline">Place. Clear. Chain your combo.</div>
+    <h1><span class="wordTop">BIG</span><span class="wordBot accentWord">BLAST</span></h1>
     <div class="highScoreCard">
       <div class="label">High Score</div>
       <div class="value" id="menuHighScore">0</div>
       <div id="menuRankBadge" class="rankBadge"></div>
-    </div>
-    <div id="menuGemLine">💎 <span id="menuGemCount">0</span> Gems</div>
-    <div class="menuButtons">
-      <button class="btn" id="playBtn">▶ PLAY</button>
-      <button class="btn secondary" id="newGameFromMenuBtn" style="display:none;">🔀 Play a Different Mode</button>
-    </div>
-    <div class="rankProgressBar" id="rankProgressBar">
-      <div class="rankProgressLabels">
-        <span id="rankProgressCurrent">🥉 Bronze</span>
-        <span id="rankProgressNext">🥈 Silver</span>
+      <div class="rankProgressBar" id="rankProgressBar">
+        <div class="rankProgressTrack"><div class="rankProgressFill" id="rankProgressFill"></div></div>
+        <div class="rankProgressText" id="rankProgressText"></div>
       </div>
-      <div class="rankProgressTrack"><div class="rankProgressFill" id="rankProgressFill"></div></div>
-      <div class="rankProgressText" id="rankProgressText"></div>
+      <button class="menuStatsStrip" id="menuStatsStrip">
+        <div class="menuStatItem"><span class="menuStatValue" id="menuStatGames">0</span><span class="menuStatLabel">Games</span></div>
+        <div class="menuStatDivider"></div>
+        <div class="menuStatItem"><span class="menuStatValue" id="menuStatLines">0</span><span class="menuStatLabel">Lines</span></div>
+        <div class="menuStatDivider"></div>
+        <div class="menuStatItem"><span class="menuStatValue" id="menuStatCombo">0</span><span class="menuStatLabel">Best Combo</span></div>
+        <div class="menuStatsChevron">›</div>
+      </button>
+    </div>
+    <div class="menuButtons">
+      <button class="btn" id="playBtn"><span class="ico" data-icon="play"></span>Play</button>
+      <button class="btn secondary" id="newGameFromMenuBtn" style="display:none;"><span class="ico" data-icon="shuffle"></span>Different mode</button>
+    </div>
+    <div class="menuBottomNav">
+      <button class="iconBtnLabeled" id="moreBtnMenu">
+        <span class="iconBtnLabeledIcon ico" data-icon="menu"></span>
+        <span class="iconBtnLabeledText">More</span>
+        <span class="badgeDot" id="moreBadge"></span>
+      </button>
+      <button class="iconBtnLabeled" id="settingsBtnMenu">
+        <span class="iconBtnLabeledIcon ico" data-icon="settings"></span>
+        <span class="iconBtnLabeledText">Settings</span>
+      </button>
     </div>
   </div>
 
   <div id="gameScreen">
     <div id="tensionOverlay"></div>
-    <div id="tensionWarningToast">😬 Board's getting risky — the screen tenses up as danger rises. Clear a line to ease it!</div>
+    <div id="tensionWarningToast" class="infoToast">😬 Board's getting risky — the screen tenses up as danger rises. Clear a line to ease it!</div>
+    <div id="comboRiskWarningToast" class="infoToast">⚠️ That shake means your combo's at risk — a few more misses and it breaks. Clear a line to keep it safe!</div>
     <div id="topBar">
-      <button class="iconBtn" id="settingsBtnGame">⚙️</button>
-      <button class="iconBtn" id="homeBtn">🏠</button>
+      <button class="iconBtn" id="settingsBtnGame"><span class="ico" data-icon="settings"></span></button>
+      <button class="iconBtn" id="homeBtn"><span class="ico" data-icon="home"></span></button>
     </div>
     <div id="scoreRow">
-      <div class="crownBadge" id="crownBadge">👑 <span id="best">0</span></div>
+      <div class="crownBadge" id="crownBadge"><span class="ico" data-icon="crown"></span><span id="best">0</span></div>
       <div id="score">0</div>
-      <div class="gemPill" id="gemPillGame">💎<span id="gemCountGame">0</span></div>
+      <div class="gemPill" id="gemPillGame"><span class="ico" data-icon="gem"></span><span id="gemCountGame">0</span></div>
     </div>
     <div id="duelScoreBar" style="display:none;">
       <div class="duelPlayerScore" id="duelP1Box">
         <div class="duelPlayerLabel">Player 1</div>
         <div class="duelPlayerValue" id="duelP1Value">0</div>
       </div>
-      <div class="duelVs">⚔️</div>
+      <div class="duelVs"><span class="ico" data-icon="swords"></span></div>
       <div class="duelPlayerScore" id="duelP2Box">
         <div class="duelPlayerLabel">Player 2</div>
         <div class="duelPlayerValue" id="duelP2Value">0</div>
       </div>
     </div>
     <div id="duelTurnBanner"></div>
-    <div class="timerBadge" id="timerBadge" style="display:none;">⏱ <span id="timerText">3:00</span></div>
-    <div class="streakStat" id="streakStatBox">🔥 Combo <span id="combo">0</span></div>
+    <div class="timerBadge" id="timerBadge" style="display:none;"><span class="ico" data-icon="timer"></span><span id="timerText">3:00</span></div>
+    <div class="streakStat" id="streakStatBox">Combo <span id="combo">0</span></div>
     <div class="streakTitle" id="streakTitle" style="display:none;"></div>
     <div id="board"></div>
     <div id="tray"></div>
     <div id="inventoryBar">
-      <div class="invSlot" id="invBombSlot"><span class="invIcon">💣</span><span class="invCount" id="invBombCount">0</span></div>
-      <div class="invSlot" id="invLaserSlot"><span class="invIcon">⚡</span><span class="invCount" id="invLaserCount">0</span></div>
-      <button class="invSlot undoSlot" id="undoBtn"><span class="invIcon">↩️</span><span class="invCount" id="undoLabel">Undo</span></button>
+      <button class="invSlot holdSlot" id="holdSlot" title="Hold a piece for later">
+        <span class="holdLabel" id="holdLabel">HOLD</span>
+        <div class="holdPieceView" id="holdPieceView"></div>
+      </button>
+      <div class="invSlot" id="invBombSlot"><span class="invIcon ico" data-icon="bomb"></span><span class="invCount" id="invBombCount">0</span></div>
+      <div class="invSlot" id="invLaserSlot"><span class="invIcon ico" data-icon="bolt"></span><span class="invCount" id="invLaserCount">0</span></div>
+      <button class="invSlot undoSlot" id="undoBtn"><span class="invIcon ico" data-icon="undo"></span><span class="invCount" id="undoLabel">Undo</span></button>
       <div class="nextPreview" id="nextPreview">
         <div class="nextLabel">NEXT</div>
         <div class="nextGrid" id="nextGrid"></div>
       </div>
     </div>
-    <div id="msg">Drag a piece onto the grid — clear rows or columns!</div>
+    <div id="msg">Drag a piece onto the grid to fill a row or column.</div>
   </div>
 
   <div id="ghost" style="display:none;"></div>
@@ -1529,23 +1755,23 @@
   <div class="modalCard">
     <h2>Settings</h2>
 
-    <div class="challengeSectionTitle"><span>🔊 Audio &amp; Haptics</span></div>
-    <div class="settingsRow"><span>🔊 Sound Effects</span><label class="switch"><input type="checkbox" id="soundToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>🎵 Background Music</span><label class="switch"><input type="checkbox" id="musicToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>📳 Haptics</span><label class="switch"><input type="checkbox" id="hapticsToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Audio &amp; haptics</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="volume"></span>Sound effects</span><label class="switch"><input type="checkbox" id="soundToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="music"></span>Background music</span><label class="switch"><input type="checkbox" id="musicToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="vibrate"></span>Haptics</span><label class="switch"><input type="checkbox" id="hapticsToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>✨ Visual Effects</span></div>
-    <div class="settingsRow"><span>😬 Board Tension Effect</span><label class="switch"><input type="checkbox" id="tensionToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>📳 Screen Shake</span><label class="switch"><input type="checkbox" id="shakeToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>💥 Bomb Particles</span><label class="switch"><input type="checkbox" id="particlesBombToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>✨ Line Clear Particles</span><label class="switch"><input type="checkbox" id="particlesLineToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>⚡ Lightning Particles</span><label class="switch"><input type="checkbox" id="particlesLightningToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Visual effects</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="pulse"></span>Board tension</span><label class="switch"><input type="checkbox" id="tensionToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="vibrate"></span>Screen shake</span><label class="switch"><input type="checkbox" id="shakeToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="burst"></span>Bomb particles</span><label class="switch"><input type="checkbox" id="particlesBombToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="sparkle"></span>Line clear particles</span><label class="switch"><input type="checkbox" id="particlesLineToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="bolt"></span>Lightning particles</span><label class="switch"><input type="checkbox" id="particlesLightningToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>♿ Accessibility</span></div>
-    <div class="settingsRow"><span>🎨 Colorblind Mode</span><label class="switch"><input type="checkbox" id="colorblindToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Accessibility</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="palette"></span>Colorblind mode</span><label class="switch"><input type="checkbox" id="colorblindToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>⚠️ Danger Zone</span></div>
-    <div class="settingsRow"><span>Reset High Score</span><button class="btn small secondary" id="resetHighScoreBtn">Reset</button></div>
+    <div class="challengeSectionTitle"><span>Danger zone</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="warning"></span>Reset high score</span><button class="btn small secondary" id="resetHighScoreBtn">Reset</button></div>
 
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeSettingsBtn">Close</button></div>
   </div>
@@ -1553,10 +1779,10 @@
 
 <div class="overlay" id="streakReviveOverlay">
   <div class="modalCard">
-    <h2>⚠️ Combo At Risk!</h2>
-    <p>You're about to lose your <span id="brokenStreakNum">0</span>x combo — are you sure you want to continue? (Ad revive is once per game.)</p>
+    <h2>⚠️ Combo at risk!</h2>
+    <p>Continuing ends your <span id="brokenStreakNum">0</span>x combo. You can revive with an ad once per game.</p>
     <div class="modalButtons">
-      <button class="btn big" id="watchAdStreakBtn">🎬 Watch Ad — Keep Combo</button>
+      <button class="btn big" id="watchAdStreakBtn"><span class="ico" data-icon="video"></span>Watch ad, keep combo</button>
       <button class="btn secondary small" id="declineStreakBtn">No, let it go</button>
     </div>
   </div>
@@ -1564,7 +1790,7 @@
 
 <div class="overlay" id="duelOverOverlay">
   <div class="modalCard">
-    <h2 id="duelOverTitle">🏆 Player 1 Wins!</h2>
+    <h2 id="duelOverTitle">Player 1 wins</h2>
     <div class="duelResultRow">
       <div class="duelResultCol" id="duelResultP1Col">
         <div class="duelResultLabel">Player 1</div>
@@ -1576,7 +1802,7 @@
       </div>
     </div>
     <div class="modalButtons">
-      <button class="btn" id="duelRematchBtn">🔁 Rematch</button>
+      <button class="btn" id="duelRematchBtn"><span class="ico" data-icon="refresh"></span>Rematch</button>
       <button class="btn secondary" id="duelHomeBtn">Home</button>
     </div>
   </div>
@@ -1584,29 +1810,29 @@
 
 <div class="overlay" id="gameOverOverlay">
   <div class="modalCard">
-    <h2 id="gameOverTitle">Board Full!</h2>
+    <h2 id="gameOverTitle">Board full!</h2>
     <div class="modalScore" id="finalScoreDisplay">0</div>
-    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:1rem; margin-bottom:8px;">🏆 NEW HIGH SCORE!</div>
+    <div id="newBestBanner" style="display:none; color:var(--gold); font-weight:900; font-size:var(--fs-md); margin-bottom:8px;">🏆 New high score!</div>
     <div class="recapGrid">
       <div class="recapItem"><div class="recapVal" id="recapLines">0</div><div class="recapLbl">Lines</div></div>
       <div class="recapItem"><div class="recapVal" id="recapCombo">0</div><div class="recapLbl">Best Combo</div></div>
       <div class="recapItem"><div class="recapVal" id="recapPieces">0</div><div class="recapLbl">Pieces</div></div>
-      <div class="recapItem"><div class="recapVal" id="recapGems">0</div><div class="recapLbl">💎 Earned</div></div>
+      <div class="recapItem"><div class="recapVal" id="recapGems">0</div><div class="recapLbl">Gems earned</div></div>
     </div>
     <p id="gameOverGemsLine" style="color:var(--gold); font-weight:700; margin-bottom:10px;"></p>
-    <div id="challengeResultSection" style="display:none; background:rgba(255,255,255,0.06); border-radius:14px; padding:14px; margin-bottom:14px;">
+    <div id="challengeResultSection" style="display:none; background:rgba(255,255,255,0.06); border-radius:var(--r-lg); padding:14px; margin-bottom:14px;">
       <div id="challengeResultText" style="font-weight:800; margin-bottom:6px;"></div>
-      <div id="challengePercentileText" style="font-size:0.72rem; color:var(--muted); margin-bottom:8px;"></div>
+      <div id="challengePercentileText" style="font-size:var(--fs-sm); color:var(--muted); margin-bottom:8px;"></div>
       <div id="challengeCreateBlock" style="display:none;">
-        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px;">Send this code to a friend:</div>
-        <div id="challengeCodeDisplay" style="font-size:1.1rem; font-weight:900; letter-spacing:1px; color:var(--gold); background:rgba(0,0,0,0.25); border-radius:10px; padding:10px; margin-bottom:8px;"></div>
-        <button class="btn small" id="copyChallengeCodeBtn">📋 Copy Code</button>
+        <div style="font-size:var(--fs-sm); color:var(--muted); margin-bottom:6px;">Send this code to a friend:</div>
+        <div id="challengeCodeDisplay" style="font-size:var(--fs-lg); font-weight:900; letter-spacing:1px; color:var(--gold); background:rgba(0,0,0,0.25); border-radius:var(--r-md); padding:10px; margin-bottom:8px;"></div>
+        <button class="btn small" id="copyChallengeCodeBtn"><span class="ico" data-icon="clipboard"></span>Copy code</button>
       </div>
     </div>
-    <p id="gameOverText">You're about to lose the game — are you sure you want to continue?</p>
+    <p id="gameOverText">There are no moves left. Continue anyway?</p>
     <div class="modalButtons">
-      <button class="btn big" id="watchAdGameOverBtn">🎬 Watch Ad — Keep Playing</button>
-      <button class="btn big" id="usePowerupGameOverBtn">💣 Use Power-Up — Keep Playing</button>
+      <button class="btn big" id="watchAdGameOverBtn"><span class="ico" data-icon="video"></span>Watch ad, keep playing</button>
+      <button class="btn big" id="usePowerupGameOverBtn"><span class="ico" data-icon="bomb"></span>Use a power-up</button>
       <button class="btn secondary small" id="endGameBtn">No, end game</button>
     </div>
   </div>
@@ -1622,7 +1848,7 @@
 
 <div id="devConsole" style="display:none;">
   <div id="devConsoleHeader">
-    <span>🛠️ Dev Console</span>
+    <span>Dev console</span>
     <button id="closeDevConsoleBtn" type="button">✕</button>
   </div>
   <div id="devConsoleBody">
@@ -1653,7 +1879,7 @@
       <button data-dev="maxRank" type="button">Jump to Max Rank</button>
     </div>
     <div class="devRowFull devDangerRow">
-      <button data-dev="resetStats" type="button">⚠ Reset All Stats</button>
+      <button data-dev="resetStats" type="button">Reset all stats</button>
     </div>
   </div>
 </div>
@@ -1671,24 +1897,24 @@
 
 <div class="overlay" id="chooseModeOverlay">
   <div class="modalCard wide">
-    <h2>Choose Mode</h2>
-    <div class="challengeSectionTitle"><span>Game Modes</span></div>
+    <h2>Choose mode</h2>
+    <div class="challengeSectionTitle"><span>Game modes</span></div>
     <div class="modeSelector" id="modeSelector">
-      <button class="modeCard active" data-mode="classic">🎮<span>Classic</span></button>
-      <button class="modeCard" data-mode="timeattack">⏱<span>Time Attack</span></button>
-      <button class="modeCard" data-mode="zen">🧘<span>Zen</span></button>
-      <button class="modeCard" data-mode="daily">📅<span>Daily</span></button>
-      <button class="modeCard" data-mode="pure">🧩<span>Pure</span></button>
-      <button class="modeCard" data-mode="duel">⚔️<span>Duel</span></button>
+      <button class="modeCard active" data-mode="classic"><span class="ico" data-icon="gamepad"></span><span>Classic</span></button>
+      <button class="modeCard" data-mode="timeattack"><span class="ico" data-icon="timer"></span><span>Time Attack</span></button>
+      <button class="modeCard" data-mode="zen"><span class="ico" data-icon="zen"></span><span>Zen</span></button>
+      <button class="modeCard" data-mode="daily"><span class="ico" data-icon="calendar"></span><span>Daily</span></button>
+      <button class="modeCard" data-mode="pure"><span class="ico" data-icon="puzzle"></span><span>Pure</span></button>
+      <button class="modeCard" data-mode="duel"><span class="ico" data-icon="swords"></span><span>Duel</span></button>
     </div>
-    <div class="challengeSectionTitle"><span>Friend Challenges</span></div>
+    <div class="challengeSectionTitle"><span>Friend challenges</span></div>
     <div class="modeSelector" id="challengeModeSelector">
-      <button class="modeCard" data-mode="challenge" style="width:auto; flex:1; flex-direction:row; gap:8px;">🎯<span>Create a Challenge</span></button>
+      <button class="modeCard" data-mode="challenge" style="width:auto; flex:1; flex-direction:row; gap:8px;"><span class="ico" data-icon="target"></span><span>Create a challenge</span></button>
     </div>
-    <p class="modeDesc" id="modeDesc">Classic — build combos, board fills up, game ends when you're stuck.</p>
-    <button class="btn secondary small" id="enterCodeLinkBtn" style="margin-bottom:12px;">🔑 Have a challenge code? Enter it</button>
+    <p class="modeDesc" id="modeDesc">Build combos. The board fills up, and the game ends when you're stuck.</p>
+    <button class="btn secondary small" id="enterCodeLinkBtn" style="margin-bottom:12px;"><span class="ico" data-icon="key"></span>Enter a challenge code</button>
     <div class="modalButtons">
-      <button class="btn" id="startModeBtn">▶ Start</button>
+      <button class="btn" id="startModeBtn"><span class="ico" data-icon="play"></span>Start</button>
       <button class="btn secondary" id="closeChooseModeBtn">Cancel</button>
     </div>
   </div>
@@ -1696,11 +1922,11 @@
 
 <div class="overlay" id="enterCodeOverlay">
   <div class="modalCard">
-    <h2>🎯 Enter Challenge Code</h2>
-    <p>Paste the code your friend sent you — you'll play the exact same puzzle they did.</p>
+    <h2>Enter challenge code</h2>
+    <p>Paste the code a friend sent you and you'll get the same puzzle they played.</p>
     <input type="text" id="challengeCodeInput" placeholder="BB-XXXXX-XXX"
-      style="width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:var(--text); font-size:1rem; text-align:center; letter-spacing:1px; margin-bottom:8px; font-weight:700;">
-    <p id="challengeCodeError" style="color:var(--red); font-size:0.8rem; min-height:16px; margin-top:0;"></p>
+      style="width:100%; box-sizing:border-box; padding:12px; border-radius:var(--r-md); border:none; background:rgba(255,255,255,0.1); color:var(--text); font-size:var(--fs-md); text-align:center; letter-spacing:1px; margin-bottom:8px; font-weight:700;">
+    <p id="challengeCodeError" style="color:var(--red); font-size:var(--fs-sm); min-height:16px; margin-top:0;"></p>
     <div class="modalButtons">
       <button class="btn" id="submitChallengeCodeBtn">Accept Challenge</button>
       <button class="btn secondary" id="closeEnterCodeBtn">Cancel</button>
@@ -1710,10 +1936,10 @@
 
 <div class="overlay" id="challengesOverlay">
   <div class="modalCard wide">
-    <h2>🎯 Challenges</h2>
-    <div class="challengeSectionTitle"><span>Daily — resets every day</span><span class="countdownText" id="dailyResetCountdown"></span></div>
+    <h2>Challenges</h2>
+    <div class="challengeSectionTitle"><span>Daily</span><span class="countdownText" id="dailyResetCountdown"></span></div>
     <div id="dailyChallengeList"></div>
-    <div class="challengeSectionTitle"><span>Weekly — resets every Monday</span><span class="countdownText" id="weeklyResetCountdown"></span></div>
+    <div class="challengeSectionTitle"><span>Weekly</span><span class="countdownText" id="weeklyResetCountdown"></span></div>
     <div id="weeklyChallengeList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeChallengesBtn">Close</button></div>
   </div>
@@ -1721,9 +1947,9 @@
 
 <div class="overlay" id="dailyRewardsOverlay">
   <div class="modalCard wide">
-    <h2>🎁 Daily Rewards</h2>
+    <h2>Daily rewards</h2>
     <div id="loginCurrentStreak" style="font-weight:700; color:var(--gold); margin-bottom:4px;"></div>
-    <p style="margin-top:0;">Come back every day — rewards keep growing the longer your streak runs.</p>
+    <p style="margin-top:0;">Rewards grow the longer your streak runs.</p>
     <div id="loginDayCardsRow" class="loginDayCardsRow"></div>
     <div id="loginClaimArea"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeDailyRewardsBtn">Close</button></div>
@@ -1732,17 +1958,58 @@
 
 <div class="overlay" id="achievementsOverlay">
   <div class="modalCard wide">
-    <h2>🏆 Achievements</h2>
-    <p style="margin-top:-10px;">Permanent milestones — these never reset.</p>
+    <h2>Achievements</h2>
+    <p style="margin-top:-10px;">Permanent milestones. These never reset.</p>
     <div id="achievementList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeAchievementsBtn">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="moreOverlay">
+  <div class="modalCard">
+    <h2>☰ More</h2>
+    <button class="moreMenuRow" id="dailyRewardsBtnMenu">
+      <span class="moreMenuIcon ico" data-icon="gift"></span>
+      <span class="moreMenuText">Daily Rewards</span>
+      <span class="badgeDot" id="loginBadge"></span>
+    </button>
+    <button class="moreMenuRow" id="challengesBtnMenu">
+      <span class="moreMenuIcon ico" data-icon="target"></span>
+      <span class="moreMenuText">Challenges</span>
+      <span class="badgeDot" id="challengeBadge"></span>
+    </button>
+    <button class="moreMenuRow" id="achievementsBtnMenu">
+      <span class="moreMenuIcon ico" data-icon="trophy"></span>
+      <span class="moreMenuText">Achievements</span>
+      <span class="badgeDot" id="achievementBadge"></span>
+    </button>
+    <button class="moreMenuRow" id="themesBtnMenu">
+      <span class="moreMenuIcon ico" data-icon="palette"></span>
+      <span class="moreMenuText">Themes</span>
+    </button>
+    <button class="moreMenuRow" id="shopBtnMenu">
+      <span class="moreMenuIcon ico" data-icon="cart"></span>
+      <span class="moreMenuText">Shop</span>
+    </button>
+    <div class="modalButtons" style="margin-top:8px;"><button class="btn secondary" id="closeMoreBtn">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="statsOverlay">
+  <div class="modalCard wide">
+    <h2>Your stats</h2>
+    <div class="challengeSectionTitle"><span>Lifetime</span></div>
+    <div class="statsGrid" id="lifetimeStatsGrid"></div>
+    <div class="challengeSectionTitle"><span>Best Runs</span></div>
+    <div id="scoreHistoryList"></div>
+    <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeStatsBtn">Close</button></div>
   </div>
 </div>
 
 <div class="overlay" id="tutorialOverlay">
   <div class="modalCard">
     <div style="text-align:right; margin-bottom:-6px;"><button class="btn small secondary" id="tutorialSkipBtn" style="padding:5px 12px;">Skip</button></div>
-    <div style="font-size:3rem; margin:10px 0 4px 0;" id="tutorialEmoji">👆</div>
+    <div style="font-size:var(--fs-4xl); margin:10px 0 4px 0; color:var(--accent);" id="tutorialEmoji"></div>
     <h2 id="tutorialTitle">Place Pieces</h2>
     <p id="tutorialText">Drag pieces from the tray onto the grid.</p>
     <div id="tutorialDots" style="display:flex; justify-content:center; gap:6px; margin-bottom:16px;"></div>
@@ -1753,8 +2020,8 @@
 <div class="overlay" id="shopOverlay">
 
   <div class="modalCard wide">
-    <h2>🛒 Shop</h2>
-    <div class="shopGemBar">💎 <span id="shopGemCount">0</span> Gems</div>
+    <h2>Shop</h2>
+    <div class="shopGemBar"><span class="ico" data-icon="gem"></span><span id="shopGemCount">0</span> gems</div>
 
     <div class="shopSectionTitle">Remove Ads</div>
     <div class="shopRow">
@@ -1767,26 +2034,26 @@
 
     <div class="shopSectionTitle">Gem Packs (simulated)</div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">100 💎</div><div class="shopSub">Small pack</div></div>
+      <div class="shopInfo"><div class="shopTitle">100<span class="ico" data-icon="gem"></span></div><div class="shopSub">Small pack</div></div>
       <button class="btn small secondary" id="buyGems100">$0.99</button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">550 💎</div><div class="shopSub">Best value</div></div>
+      <div class="shopInfo"><div class="shopTitle">550<span class="ico" data-icon="gem"></span></div><div class="shopSub">Best value</div></div>
       <button class="btn small secondary" id="buyGems550">$4.99</button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">1200 💎</div><div class="shopSub">Big pack</div></div>
+      <div class="shopInfo"><div class="shopTitle">1200<span class="ico" data-icon="gem"></span></div><div class="shopSub">Big pack</div></div>
       <button class="btn small secondary" id="buyGems1200">$9.99</button>
     </div>
 
     <div class="shopSectionTitle">Power-Ups</div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">💣 Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area — added to your Inventory</div></div>
-      <button class="btn small secondary" id="buyBombGem">40 💎</button>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bomb"></span>Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area. Added to your inventory.</div></div>
+      <button class="btn small secondary" id="buyBombGem">40<span class="ico" data-icon="gem"></span></button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">⚡ Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row & column — added to your Inventory</div></div>
-      <button class="btn small secondary" id="buyLaserGem">50 💎</button>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bolt"></span>Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row and column. Added to your inventory.</div></div>
+      <button class="btn small secondary" id="buyLaserGem">50<span class="ico" data-icon="gem"></span></button>
     </div>
 
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeShopBtn">Close</button></div>
@@ -1795,7 +2062,7 @@
 
 <div class="overlay" id="themesOverlay">
   <div class="modalCard wide">
-    <h2>🎨 Themes</h2>
+    <h2>Themes</h2>
     <div id="skinList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeThemesBtn">Close</button></div>
   </div>
@@ -1806,7 +2073,7 @@
     <button class="iconBtn themeTryCloseBtn" id="closeThemeTryBtn">✕</button>
     <h2 id="themeTryName">Theme Name</h2>
     <div class="themeTryBoard" id="themeTryBoard"></div>
-    <div class="themeTryHint">Preview only — no moves here</div>
+    <div class="themeTryHint">Preview only</div>
   </div>
 </div>
 
@@ -1847,7 +2114,7 @@
     <div class="rankUpTransition">
       <div class="rankUpBadgeOld" id="rankUpBadgeOld"></div>
       <div class="rankUpArrow">→</div>
-      <div class="rankUpRingWrap"><div class="rankUpRings"></div><div class="rankUpBadgeBig" id="rankUpBadgeBig">🥈</div></div>
+      <div class="rankUpRingWrap"><div class="rankUpRings"></div><div class="rankUpBadgeBig" id="rankUpBadgeBig"></div></div>
     </div>
     <h2 class="rankUpTitle">RANK UP!</h2>
     <div class="rankUpNewRankName" id="rankUpNewRankName"></div>
@@ -1857,9 +2124,9 @@
 
 <div class="overlay" id="themeUnlockOverlay">
   <div class="modalCard">
-    <h2>🎁 New Theme Unlocked!</h2>
+    <h2>New theme unlocked</h2>
     <div class="skinSwatch themeUnlockSwatch" id="themeUnlockSwatch"></div>
-    <div id="themeUnlockName" style="font-weight:800; font-size:1.05rem; margin:8px 0 12px 0;"></div>
+    <div id="themeUnlockName" style="font-weight:800; font-size:var(--fs-md); margin:8px 0 12px 0;"></div>
     <div class="themeUnlockRewardRow" id="themeUnlockReward" style="display:none;"></div>
     <div class="modalButtons">
       <button class="btn" id="equipThemeNowBtn">Equip Now</button>
@@ -1870,6 +2137,69 @@
 
 <script>
 (function(){
+  // ---------- Icon set ----------
+  // Declared first: these are consts, so anything that calls iconMarkup()
+  // during start-up would hit the temporal dead zone if they lived further
+  // down the file. Several rank//countdown helpers do exactly that.
+  const ICON_SVGS = {
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    settings: '<path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/>',
+    gift: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M3 8h18v4H3z"/><path d="M12 8v12"/><path d="M12 8S10.5 4 8.5 4a2 2 0 0 0 0 4M12 8s1.5-4 3.5-4a2 2 0 0 1 0 4"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
+    trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4M9 20h6M10 17h4"/>',
+    palette: '<path d="M12 4a8 8 0 0 0 0 16c1.1 0 1.7-.8 1.7-1.6 0-1.2-1-1.6-.5-2.5.4-.8 1.3-.6 2.3-.6A4.5 4.5 0 0 0 20 10.8C20 6.9 16.4 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
+    cart: '<path d="M3 5h2l2.2 9.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.1L20 8H6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+    bomb: '<circle cx="11" cy="15.5" r="5.5"/><path d="M11 10V7.6"/><path d="M11 7.6c0-1.8 1.5-3.1 3.2-3.1 1.2 0 2 .8 2 1.7"/><path d="M18.2 4.3l1 .9M20 7.4l1.3-.5"/>',
+    bolt: '<path d="M13.5 3L6 13.5h5L10.5 21 18 10.5h-5z"/>',
+    undo: '<path d="M4 8h9a5 5 0 0 1 0 10H8"/><path d="M7.5 4.5L4 8l3.5 3.5"/>',
+    home: '<path d="M4 11l8-6.5 8 6.5"/><path d="M6.5 9.8V19a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.8"/><path d="M10 20v-5h4v5"/>',
+    gem: '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4L7.5 9 12 20M15 4l1.5 5L12 20"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    crown: '<path d="M4 8l3.5 3.5L12 5l4.5 6.5L20 8l-1.5 10h-13z"/><path d="M5.5 18h13"/>',
+    // Chrome icons. Emoji render as different artwork on every device and read
+    // as a placeholder for art nobody drew — so anything that is interface
+    // rather than game content gets a stroke icon from this set instead.
+    play: '<path d="M8 5.5v13l11-6.5z"/>',
+    shuffle: '<path d="M3 7.5h3.4c1.5 0 2.9.7 3.8 2l3.6 5c.9 1.3 2.3 2 3.8 2H21"/><path d="M3 16.5h3.4c1.5 0 2.9-.7 3.8-2M13.8 9.5c.9-1.3 2.3-2 3.8-2H21"/><path d="M18.5 5L21 7.5 18.5 10M18.5 14l2.5 2.5-2.5 2.5"/>',
+    video: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/>',
+    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M17.5 12v3.5M20.5 12v2.5"/>',
+    gamepad: '<rect x="2.5" y="7.5" width="19" height="10" rx="4"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.8" r="1"/><circle cx="18.4" cy="14" r="1"/>',
+    timer: '<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.5l2.2 1.6M9.5 3h5"/>',
+    zen: '<path d="M19.5 4C10.4 4 4.5 9 4.5 15.2A5.3 5.3 0 0 0 14 18.6C18.2 15 19.5 9.7 19.5 4z"/><path d="M4.5 20c3-4.6 6.7-7.6 11.3-9.5"/>',
+    calendar: '<rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/>',
+    puzzle: '<path d="M11 5.4a2.2 2.2 0 1 1 4.4 0V7H19a1 1 0 0 1 1 1v3.4h-1.6a2.2 2.2 0 1 0 0 4.4H20V19a1 1 0 0 1-1 1H8.4a1 1 0 0 1-1-1v-3.2H5.8a2.2 2.2 0 1 1 0-4.4h1.6V8a1 1 0 0 1 1-1H11z"/>',
+    swords: '<path d="M4 4h3l8.5 8.5-3 3L4 7z"/><path d="M20 4h-3l-8.5 8.5 3 3L20 7z"/><path d="M14.5 15.5l4 4M9.5 15.5l-4 4"/>',
+    volume: '<path d="M5 9.5h3L12 6v12l-4-3.5H5z"/><path d="M16 9.8a3.2 3.2 0 0 1 0 4.4M18.4 7.4a6.6 6.6 0 0 1 0 9.2"/>',
+    music: '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+    vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9.5v5M2 11v2M19.5 9.5v5M22 11v2"/>',
+    pulse: '<path d="M2.5 12.5h4l2.5-6 3.5 12 2.5-7 2 3h4.5"/>',
+    burst: '<path d="M12 3.5v3.5M12 17v3.5M3.5 12h3.5M17 12h3.5"/><path d="M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.6"/>',
+    sparkle: '<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+    accessibility: '<circle cx="12" cy="5" r="1.8"/><path d="M5.5 9h13M12 9v5M12 14l-3 6.5M12 14l3 6.5"/>',
+    warning: '<path d="M12 4.2L21 19.5H3z"/><path d="M12 10v4M12 16.6v.2"/>',
+    pointer: '<path d="M9 11.5V5.2a1.7 1.7 0 1 1 3.4 0v5.1"/><path d="M12.4 10.6V9.2a1.6 1.6 0 1 1 3.2 0v1.6"/><path d="M15.6 10.9V10a1.6 1.6 0 1 1 3.2 0v5.2a5.5 5.5 0 0 1-5.5 5.5h-1.6a5 5 0 0 1-3.9-1.9L5 14.6a1.7 1.7 0 0 1 2.7-2.1L9 14"/>',
+    clipboard: '<rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/>',
+    wrench: '<path d="M15.5 3.5a5.5 5.5 0 0 0-5 7.8L3.8 18a2 2 0 0 0 2.8 2.8l6.7-6.7a5.5 5.5 0 0 0 6.9-7.2l-3 3-2.6-2.6 3-3a5.5 5.5 0 0 0-2.1-.8z"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    lock: '<rect x="4.5" y="10" width="15" height="10.5" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/>',
+  };
+  function iconMarkup(name){
+    const body = ICON_SVGS[name];
+    if(!body) return '';
+    // The class carries its own sizing so iconMarkup() can be dropped into any
+    // container, not just a .ico span — an unclassed inline <svg> has no
+    // intrinsic size and would blow out to the default 300x150.
+    return `<svg class="icoSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  }
+  function renderIcons(root){
+    (root||document).querySelectorAll('[data-icon]').forEach(el=>{
+      const n = el.dataset.icon;
+      if(n && !el.firstElementChild) el.innerHTML = iconMarkup(n);
+    });
+  }
+
   // One-time full data wipe for this release — bump CURRENT_DATA_VERSION any
   // time everyone's saved progress should reset (e.g. shipping to new players).
   // Catches every "blastgrid_" key by prefix rather than listing them individually,
@@ -1949,25 +2279,25 @@
     {id:'sunset',  name:'Sunset',       cost:80,  swatch:['#ff5e3a','#ff9f1c','#e94560','#ff6b35']},
     {id:'ocean',   name:'Deep Ocean',   cost:80,  swatch:['#00b4d8','#06a77d','#0077b6','#03878f']},
     {id:'candy',   name:'Cotton Candy', cost:120, swatch:['#ff8fd6','#b98cff','#8fe0ff','#ffb98f']},
-    {id:'space',   name:'🚀 Deep Space', cost:150, swatch:['#c026d3','#0ea5e9','#7c3aed','#e11d48']},
-    {id:'cheese',  name:'🧀 Cheese Wheel', cost:150, swatch:['#f2a900','#ffcc33','#e08e00','#cc7a00']},
-    {id:'midnight',name:'🌙 Midnight',     cost:100, swatch:['#4361ee','#7209b7','#3a0ca3','#4cc9f0']},
-    {id:'inferno', name:'🔥 Inferno',      cost:130, swatch:['#ff0000','#ff7b00','#ffdd00','#c1121f']},
-    {id:'rainbow', name:'🌈 Rainbow Pop',  cost:180, swatch:['#ff006e','#fb5607','#ffbe0b','#8338ec']},
-    {id:'crimson', name:'🩸 Crimson Void', cost:260, swatch:['#ff3b3b','#8a0000','#ff0844','#4a0404']},
-    {id:'amethyst',name:'👑 Royal Amethyst',cost:290, swatch:['#e0aaff','#ffd60a','#c77dff','#9d4edd']},
-    {id:'toxic',   name:'☠️ Toxic Neon',    cost:320, swatch:['#ccff00','#39ff14','#111a05','#00ff87']},
-    {id:'thunderstorm', name:'⚡ Thunderstorm', cost:380, swatch:['#8fa8ff','#6b7a99','#e8f0ff','#fff9c4']},
-    {id:'spooky',        name:'🎃 Spooky Night', cost:380, swatch:['#ff8c3a','#8a4fd9','#f2e9d8','#7cff6b']},
-    {id:'fireworks',     name:'🎆 Fireworks Festival', cost:420, swatch:['#ff5c5c','#ffd75c','#5cf2ff','#ff5cf2']},
-    {id:'singularity',   name:'🌌 Singularity', cost:750, swatch:['#ffffff','#5cf2ff','#ff5cf2','#a855ff']},
-    {id:'rankSilver',    name:'🥈 Silver Streak',   unlockRank:'Silver',    swatch:['#e8edf2','#b0c4de','#8fa8c4','#d4dce4']},
-    {id:'rankGold',      name:'🥇 Golden Hour',     unlockRank:'Gold',      swatch:['#ffd700','#ffb347','#daa520','#ffcc66']},
-    {id:'rankPlatinum',  name:'💎 Platinum Prism',  unlockRank:'Platinum',  swatch:['#7ee8e0','#a0f0ea','#40c9c0','#c0f5f0']},
-    {id:'rankDiamond',   name:'👑 Diamond Royale',  unlockRank:'Diamond',   swatch:['#c58cff','#9d4edd','#e0aaff','#b298dc']},
-    {id:'rankLegendary', name:'🌟 Legendary Aurora',unlockRank:'Legendary', swatch:['#ff5088','#ffd700','#3fc9e8','#c58cff']},
-    {id:'rankSupernova', name:'💥 Supernova',        unlockRank:'Supernova', swatch:['#ffffff','#ffd700','#ff5088','#3fc9e8']},
-    {id:'secretNice',    name:'🍃 High Score',       unlockScore:420670690,      swatch:['#2ee66b','#ffd700','#7de88a','#ffcc33']},
+    {id:'space',   name:'Deep Space', cost:150, swatch:['#c026d3','#0ea5e9','#7c3aed','#e11d48']},
+    {id:'cheese',  name:'Cheese Wheel', cost:150, swatch:['#f2a900','#ffcc33','#e08e00','#cc7a00']},
+    {id:'midnight',name:'Midnight',     cost:100, swatch:['#4361ee','#7209b7','#3a0ca3','#4cc9f0']},
+    {id:'inferno', name:'Inferno',      cost:130, swatch:['#ff0000','#ff7b00','#ffdd00','#c1121f']},
+    {id:'rainbow', name:'Rainbow Pop',  cost:180, swatch:['#ff006e','#fb5607','#ffbe0b','#8338ec']},
+    {id:'crimson', name:'Crimson Void', cost:260, swatch:['#ff3b3b','#8a0000','#ff0844','#4a0404']},
+    {id:'amethyst',name:'Royal Amethyst',cost:290, swatch:['#e0aaff','#ffd60a','#c77dff','#9d4edd']},
+    {id:'toxic',   name:'Toxic Neon',    cost:320, swatch:['#ccff00','#39ff14','#111a05','#00ff87']},
+    {id:'thunderstorm', name:'Thunderstorm', cost:380, swatch:['#8fa8ff','#6b7a99','#e8f0ff','#fff9c4']},
+    {id:'spooky',        name:'Spooky Night', cost:380, swatch:['#ff8c3a','#8a4fd9','#f2e9d8','#7cff6b']},
+    {id:'fireworks',     name:'Fireworks Festival', cost:420, swatch:['#ff5c5c','#ffd75c','#5cf2ff','#ff5cf2']},
+    {id:'singularity',   name:'Singularity', cost:750, swatch:['#ffffff','#5cf2ff','#ff5cf2','#a855ff']},
+    {id:'rankSilver',    name:'Silver Streak',   unlockRank:'Silver',    swatch:['#e8edf2','#b0c4de','#8fa8c4','#d4dce4']},
+    {id:'rankGold',      name:'Golden Hour',     unlockRank:'Gold',      swatch:['#ffd700','#ffb347','#daa520','#ffcc66']},
+    {id:'rankPlatinum',  name:'Platinum Prism',  unlockRank:'Platinum',  swatch:['#7ee8e0','#a0f0ea','#40c9c0','#c0f5f0']},
+    {id:'rankDiamond',   name:'Diamond Royale',  unlockRank:'Diamond',   swatch:['#c58cff','#9d4edd','#e0aaff','#b298dc']},
+    {id:'rankLegendary', name:'Legendary Aurora',unlockRank:'Legendary', swatch:['#ff5088','#ffd700','#3fc9e8','#c58cff']},
+    {id:'rankSupernova', name:'Supernova',        unlockRank:'Supernova', swatch:['#ffffff','#ffd700','#ff5088','#3fc9e8']},
+    {id:'secretNice',    name:'High Score',       unlockScore:420670690,      swatch:['#2ee66b','#ffd700','#7de88a','#ffcc33']},
   ];
   const SKIN_COLOR_MAPS = {
     classic:{ blk0:'#ff1f7a', blk1:'#ffa900', blk2:'#00c3f0', blk3:'#a933ff', blk4:'#ff6a00', blk5:'#00e676' },
@@ -2049,8 +2379,8 @@
   function updateCountdownTexts(){
     const d = document.getElementById('dailyResetCountdown');
     const w = document.getElementById('weeklyResetCountdown');
-    if(d) d.textContent = '⏱ ' + formatCountdown(msUntilNextMidnight());
-    if(w) w.textContent = '⏱ ' + formatCountdown(msUntilNextMonday());
+    if(d) d.innerHTML = iconMarkup('timer') + '<span>' + formatCountdown(msUntilNextMidnight()) + '</span>';
+    if(w) w.innerHTML = iconMarkup('timer') + '<span>' + formatCountdown(msUntilNextMonday()) + '</span>';
   }
   function shuffle(arr){
     const a = arr.slice();
@@ -2273,6 +2603,7 @@
     const startIt = ()=>{
       haptic(10);
       if(musicEnabled) startAmbientMusic();
+      if(hadSave) recordScoreHistory(); // capture the abandoned run's score before it's discarded
       clearSavedGame();
       restart();
       showScreen('game');
@@ -2425,18 +2756,22 @@
   let lifetimeStats = { gamesPlayed:0, piecesPlaced:0, linesCleared:0, specialUsed:0, maxCombo:0 };
   try{ lifetimeStats = Object.assign(lifetimeStats, JSON.parse(localStorage.getItem('blastgrid_lifetime_stats')||'{}')); }catch(e){}
 
+  // `sym` is the ICON_SVGS name drawn anywhere the tier appears in the UI;
+  // `icon` is the emoji, kept solely for the rank-up emoji rain, which is a
+  // celebration rather than chrome. Tier identity is carried by colour (see
+  // the .rank-* classes), so the symbols only need to group the tiers.
   const RANK_TIERS = [
-    {min:0,      name:'Bronze',    cls:'rank-bronze',    icon:'🥉'},
-    {min:40000,  name:'Silver',    cls:'rank-silver',    icon:'🥈'},
-    {min:85000,  name:'Gold',      cls:'rank-gold',      icon:'🥇'},
-    {min:245000, name:'Platinum',  cls:'rank-platinum',  icon:'💎'},
-    {min:475000, name:'Diamond',   cls:'rank-diamond',   icon:'👑'},
-    {min:1000000,name:'Legendary', cls:'rank-legendary', icon:'🌟'},
+    {min:0,      name:'Bronze',    cls:'rank-bronze',    sym:'trophy', icon:'🥉'},
+    {min:40000,  name:'Silver',    cls:'rank-silver',    sym:'trophy', icon:'🥈'},
+    {min:85000,  name:'Gold',      cls:'rank-gold',      sym:'trophy', icon:'🥇'},
+    {min:245000, name:'Platinum',  cls:'rank-platinum',  sym:'gem',    icon:'💎'},
+    {min:475000, name:'Diamond',   cls:'rank-diamond',   sym:'gem',    icon:'👑'},
+    {min:1000000,name:'Legendary', cls:'rank-legendary', sym:'crown',  icon:'🌟'},
     // The ~0.001% tier — purely score-gated. Rescaled ~2.8x alongside every
     // other tier after the solvability fix roughly 2.5x'd average scores —
     // verified via a fresh player-journey simulation with the new piece-
     // generation logic, not just a flat multiply of the old thresholds.
-    {min:2500000,name:'Supernova', cls:'rank-supernova', icon:'💥'},
+    {min:2500000,name:'Supernova', cls:'rank-supernova', sym:'burst',  icon:'💥'},
   ];
   function meetsRankTier(tier, score){
     if(score < tier.min) return false;
@@ -2487,25 +2822,20 @@
     if(!badge) return;
     const rank = getRankInfo(rankBest);
     badge.className = 'rankBadge ' + rank.cls;
-    badge.textContent = `${rank.icon} ${rank.name}`;
+    badge.innerHTML = `${iconMarkup(rank.sym)}<span>${rank.name}</span>`;
 
     const bar = document.getElementById('rankProgressBar');
     const fill = document.getElementById('rankProgressFill');
-    const curEl = document.getElementById('rankProgressCurrent');
-    const nextEl = document.getElementById('rankProgressNext');
     const textEl = document.getElementById('rankProgressText');
     if(!bar) return;
     const idx = RANK_TIERS.findIndex(t=>t.name===rank.name);
     const next = RANK_TIERS[idx+1];
-    curEl.textContent = `${rank.icon} ${rank.name}`;
     if(!next){
       bar.classList.add('maxed');
-      nextEl.textContent = '🏆 Max Rank';
       fill.style.width = '100%';
-      textEl.textContent = `${rankBest.toLocaleString()} — you've hit the top tier!`;
+      textEl.textContent = `${rankBest.toLocaleString()} — top tier`;
     } else {
       bar.classList.remove('maxed');
-      nextEl.textContent = `${next.icon} ${next.name}`;
       const span = next.min - rank.min;
       const scoreProgress = span>0 ? Math.min(1, Math.max(0, (rankBest - rank.min)/span)) : 1;
       let progress = scoreProgress;
@@ -2528,6 +2858,10 @@
 
   // Same simulation's score-percentile curve, reused for the friend-challenge
   // result screen so a loss can show useful context instead of just a number.
+  // Derived from a 2000-game simulation of the game's own scoring model — NOT
+  // from real player data. The UI wording reflects this ("estimated"). If real
+  // telemetry ever exists, rebuild this curve from it and the wording can drop
+  // the qualifier.
   const SCORE_PERCENTILE_CURVE = [
     [0,474],[5,3944],[10,6164],[25,14624],[40,25302],[50,36260],[60,49472],
     [75,87140],[85,136896],[90,189380],[95,286818],[97,380268],[99,628838],
@@ -2600,7 +2934,7 @@
     const available = undoSnapshot !== null && !gameOver;
     const costsGems = undoUsedThisGame;
     btn.disabled = !available || (costsGems && gems < UNDO_GEM_COST);
-    label.textContent = costsGems ? `${UNDO_GEM_COST}💎` : 'Undo';
+    label.innerHTML = costsGems ? `${UNDO_GEM_COST}${iconMarkup('gem')}` : 'Undo';
   }
 
   function performUndo(){
@@ -2616,6 +2950,8 @@
     const s = undoSnapshot;
     grid = s.grid.map(row=>row.map(cell=>cell ? {...cell} : null));
     trayPieces = s.trayPieces.map(p=>p ? {...p, cells:p.cells.map(c=>c.slice())} : null);
+    heldPiece = s.heldPiece ? {...s.heldPiece, cells:s.heldPiece.cells.map(c=>c.slice())} : null;
+    renderHold();
     score = s.score; combo = s.combo; noClearStreak = s.noClearStreak;
     inventory = {...s.inventory};
     sessionLines = s.sessionLines; sessionBestCombo = s.sessionBestCombo; sessionPieces = s.sessionPieces;
@@ -2665,6 +3001,11 @@
     overlay.classList.add('closing');
     setTimeout(()=>{ overlay.classList.remove('show','closing'); }, 210);
   }
+
+  // ---------- Icon system ----------
+  // Inline SVG rather than emoji: emoji render as entirely different artwork
+  // on Samsung vs Pixel vs iPhone, so the UI looked different on every device.
+  // These inherit currentColor, so they adapt to every theme automatically.
 
   // ---------- Board skin application ----------
   // ---------- Supernova: WebGL shader background + outward-exploding particle
@@ -2749,10 +3090,19 @@
     return true;
   }
 
+  // The fragment shader runs per-pixel every frame, so its cost scales directly
+  // with resolution — profiling showed it was the single biggest performance
+  // cost in the game (dropping to ~38% of baseline frame rate at full res).
+  // Rendering at half resolution and letting the GPU scale it up nearly doubles
+  // the frame rate with no visible difference, because a soft nebula has no
+  // fine detail to lose. Particles stay full-res — they have crisp edges that
+  // would visibly degrade if scaled.
+  const SHADER_RENDER_SCALE = 0.5;
+
   function resizeSupernovaCanvas(){
     if(supernovaGLCanvas){
-      supernovaGLCanvas.width = window.innerWidth;
-      supernovaGLCanvas.height = window.innerHeight;
+      supernovaGLCanvas.width = Math.round(window.innerWidth * SHADER_RENDER_SCALE);
+      supernovaGLCanvas.height = Math.round(window.innerHeight * SHADER_RENDER_SCALE);
       if(supernovaGL) supernovaGL.viewport(0,0,supernovaGLCanvas.width,supernovaGLCanvas.height);
     }
     if(supernovaParticleCanvas){
@@ -2927,8 +3277,8 @@
 
   function resizeSingularityCanvases(){
     if(singularityGLCanvas){
-      singularityGLCanvas.width = window.innerWidth;
-      singularityGLCanvas.height = window.innerHeight;
+      singularityGLCanvas.width = Math.round(window.innerWidth * SHADER_RENDER_SCALE);
+      singularityGLCanvas.height = Math.round(window.innerHeight * SHADER_RENDER_SCALE);
       if(singularityGL) singularityGL.viewport(0,0,singularityGLCanvas.width,singularityGLCanvas.height);
     }
     if(singularityParticleCanvas){
@@ -3209,18 +3559,41 @@
     }
   }
 
-  function showScreen(name){
+  /** Performs the actual screen swap. Split out so showScreen() can run it
+   * hidden behind the transition veil. */
+  function applyScreen(name){
     menuScreen.style.display = name==='menu' ? 'flex' : 'none';
     gameScreen.style.display = name==='game' ? 'flex' : 'none';
     const incoming = name==='menu' ? menuScreen : gameScreen;
     incoming.classList.remove('screenEnter');
     void incoming.offsetWidth;
     incoming.classList.add('screenEnter');
-    if(name==='game') requestAnimationFrame(()=>{ fitBoard(); renderTray(false); });
+    if(name==='game') requestAnimationFrame(()=>{ fitBoard(); renderTray(false); renderHold(); });
     if(name==='menu'){
       stopTensionEffects();
-      updateChallengeBadge(); updateGemDisplays(); menuHighScoreEl.textContent = best.toLocaleString(); updateRankBadge(); updateMenuPlayButton();
+      updateChallengeBadge(); updateGemDisplays(); menuHighScoreEl.textContent = best.toLocaleString(); updateRankBadge(); updateMenuPlayButton(); updateMenuStatsStrip();
     }
+  }
+
+  // Screen swaps used to be an instant cut, then a fade-in — so you saw the new
+  // screen appear abruptly before it animated. Fading a veil in first, swapping
+  // behind it, then fading it back out makes the change read as one smooth
+  // motion. Kept synchronous so every existing showScreen() call site works
+  // unchanged; the veil timing is handled internally.
+  let veilTimer = null;
+  function showScreen(name){
+    const veil = document.getElementById('transitionVeil');
+    if(!veil || prefersReducedMotion()){ applyScreen(name); return; }
+    clearTimeout(veilTimer);
+    veil.classList.add('active');
+    veilTimer = setTimeout(()=>{
+      applyScreen(name);
+      requestAnimationFrame(()=>{ veil.classList.remove('active'); });
+    }, 180);
+  }
+
+  function prefersReducedMotion(){
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   function fitBoard(){
@@ -3284,6 +3657,7 @@
     const startFresh = ()=>{
       haptic(10);
       if(musicEnabled) startAmbientMusic();
+      if(hadSave) recordScoreHistory(); // capture the abandoned run's score before it's discarded
       clearSavedGame();
       restart();
       showScreen('game');
@@ -3323,6 +3697,16 @@
     }, true);
   });
   document.getElementById('settingsBtnMenu').addEventListener('click', (e)=> openOverlay(settingsOverlay, e.currentTarget));
+
+  const moreOverlay = document.getElementById('moreOverlay');
+  document.getElementById('moreBtnMenu').addEventListener('click', (e)=> openOverlay(moreOverlay, e.currentTarget));
+  document.getElementById('closeMoreBtn').addEventListener('click', ()=> closeOverlay(moreOverlay));
+  // These buttons already have their own click handlers elsewhere (opening their
+  // real destination) — this just additionally closes the More popup they now
+  // live inside, so two overlays don't end up stacked on screen at once.
+  ['dailyRewardsBtnMenu','challengesBtnMenu','achievementsBtnMenu','themesBtnMenu','shopBtnMenu'].forEach(id=>{
+    document.getElementById(id).addEventListener('click', ()=> closeOverlay(moreOverlay));
+  });
   document.getElementById('settingsBtnGame').addEventListener('click', (e)=> openOverlay(settingsOverlay, e.currentTarget));
   document.getElementById('closeSettingsBtn').addEventListener('click', ()=> closeOverlay(settingsOverlay));
   document.getElementById('gemPillGame').addEventListener('click', (e)=>{ renderShop(); openOverlay(shopOverlay, e.currentTarget); });
@@ -3392,21 +3776,22 @@
   }
   function rewardLinesHtml(reward){
     let html = '';
-    if(reward.bomb) html += `<div>💣×${reward.bomb}</div>`;
-    if(reward.laser) html += `<div>⚡×${reward.laser}</div>`;
-    if(reward.gems) html += `<div>💎${reward.gems}</div>`;
+    if(reward.bomb) html += `<div>${iconMarkup('bomb')}×${reward.bomb}</div>`;
+    if(reward.laser) html += `<div>${iconMarkup('bolt')}×${reward.laser}</div>`;
+    if(reward.gems) html += `<div>${iconMarkup('gem')}${reward.gems}</div>`;
     return html;
   }
   function updateLoginBadge(){
     document.getElementById('loginBadge').classList.toggle('show', computePendingLogin() !== null);
+    updateMoreBadge();
   }
   function renderLoginOverlay(){
     const state = computeLoginStreakState();
     const pending = computePendingLogin();
     const startDay = pending ? pending.day : (state.streak+1);
     document.getElementById('loginCurrentStreak').textContent = state.streak>0
-      ? `🔥 Current streak: ${state.streak} day${state.streak>1?'s':''}`
-      : `Start your streak today!`;
+      ? `Current streak: ${state.streak} day${state.streak>1?'s':''}`
+      : `Start your streak today`;
     const row = document.getElementById('loginDayCardsRow');
     row.innerHTML = '';
     for(let i=0;i<7;i++){
@@ -3420,7 +3805,7 @@
     }
     const claimArea = document.getElementById('loginClaimArea');
     if(pending){
-      claimArea.innerHTML = `<button class="btn" id="claimLoginBtnStandalone" style="width:100%;">Claim Day ${pending.day} Reward</button>`;
+      claimArea.innerHTML = `<button class="btn" id="claimLoginBtnStandalone" style="width:100%;">Claim day ${pending.day}</button>`;
       document.getElementById('claimLoginBtnStandalone').addEventListener('click', ()=>{
         claimLoginBonus();
         renderLoginOverlay();
@@ -3440,14 +3825,15 @@
     const dailyReady = dailyData.challenges.some(c=>!c.claimed && (dailyStats[c.statKey]||0) >= c.target);
     const weeklyReady = !weeklyData.claimed && (weeklyStats[weeklyData.statKey]||0) >= weeklyData.target;
     document.getElementById('challengeBadge').classList.toggle('show', dailyReady||weeklyReady);
+    updateMoreBadge();
   }
 
   function rewardText(reward){
     const parts = [];
-    if(reward.bomb) parts.push(`💣×${reward.bomb}`);
-    if(reward.laser) parts.push(`⚡×${reward.laser}`);
-    if(reward.gems) parts.push(`💎×${reward.gems}`);
-    return parts.join('  ');
+    if(reward.bomb) parts.push(`${iconMarkup('bomb')}×${reward.bomb}`);
+    if(reward.laser) parts.push(`${iconMarkup('bolt')}×${reward.laser}`);
+    if(reward.gems) parts.push(`${iconMarkup('gem')}${reward.gems}`);
+    return parts.join('&nbsp;&nbsp;');
   }
   function grantReward(reward){
     if(reward.bomb) inventory.bomb += reward.bomb;
@@ -3572,9 +3958,84 @@
   function bumpLifetimeStat(key, amount){ lifetimeStats[key] = (lifetimeStats[key]||0)+amount; saveLifetimeStats(); updateAchievementBadge(); }
   function maxLifetimeStat(key, value){ lifetimeStats[key] = Math.max(lifetimeStats[key]||0, value); saveLifetimeStats(); updateAchievementBadge(); }
 
+  // ---------- Personal best history ----------
+  // Keeps only the top 10 runs ever, so the list is always "your best", not a
+  // rolling log that pushes good runs out. Duel is excluded for the same reason
+  // it's excluded from rank: alternating two-player scores aren't a solo result.
+  let scoreHistory = [];
+  try{ scoreHistory = JSON.parse(localStorage.getItem('blastgrid_score_history')||'[]'); }catch(e){ scoreHistory = []; }
+
+  const MODE_LABELS = { classic:'Classic', timeattack:'Time Attack', zen:'Zen', daily:'Daily', challenge:'Challenge', pure:'Pure', duel:'Duel' };
+
+  function recordScoreHistory(){
+    if(gameMode==='duel') return;
+    if(score <= 0) return;
+    scoreHistory.push({
+      score: score,
+      mode: gameMode,
+      lines: sessionLines,
+      combo: sessionBestCombo,
+      date: Date.now(),
+    });
+    scoreHistory.sort((a,b)=>b.score-a.score);
+    scoreHistory = scoreHistory.slice(0,10);
+    localStorage.setItem('blastgrid_score_history', JSON.stringify(scoreHistory));
+  }
+
+  function formatHistoryDate(ts){
+    const d = new Date(ts), now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    if(sameDay) return 'Today';
+    const yest = new Date(now); yest.setDate(now.getDate()-1);
+    if(d.toDateString() === yest.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+  }
+
+  function renderStats(){
+    const grid = document.getElementById('lifetimeStatsGrid');
+    const stats = [
+      { value: lifetimeStats.gamesPlayed||0,  label: 'Games Played' },
+      { value: lifetimeStats.linesCleared||0, label: 'Lines Cleared' },
+      { value: lifetimeStats.piecesPlaced||0, label: 'Pieces Placed' },
+      { value: lifetimeStats.maxCombo||0,     label: 'Best Combo' },
+      { value: lifetimeStats.specialUsed||0,  label: 'Power Pieces Used' },
+      { value: best||0,                       label: 'High Score' },
+    ];
+    grid.innerHTML = stats.map(s=>
+      `<div class="statCard"><div class="statCardValue">${s.value.toLocaleString()}</div><div class="statCardLabel">${s.label}</div></div>`
+    ).join('');
+
+    const list = document.getElementById('scoreHistoryList');
+    if(!scoreHistory.length){
+      list.innerHTML = `<div class="historyEmpty">No runs recorded yet — finish a game to start building your top 10.</div>`;
+      return;
+    }
+    list.innerHTML = scoreHistory.map((h,i)=>{
+      const rankInfo = getRankInfo(h.score);
+      return `<div class="historyRow${i===0?' isBest':''}">
+        <div class="historyRank">${i===0?iconMarkup('crown'):'#'+(i+1)}</div>
+        <div class="historyMain">
+          <div class="historyScore">${h.score.toLocaleString()}</div>
+          <div class="historyMeta">${MODE_LABELS[h.mode]||h.mode} · ${h.lines} lines · x${h.combo} combo · ${formatHistoryDate(h.date)}</div>
+        </div>
+        <div class="historyRank">${iconMarkup(rankInfo.sym)}</div>
+      </div>`;
+    }).join('');
+  }
+
   function updateAchievementBadge(){
     const ready = ACHIEVEMENTS.some(a=>!claimedAchievements.includes(a.id) && (lifetimeStats[a.key]||0) >= a.target);
     document.getElementById('achievementBadge').classList.toggle('show', ready);
+    updateMoreBadge();
+  }
+
+  /** The More button aggregates all three sub-badges — shows a dot if ANY of
+   * the items tucked inside it has something pending, so nothing gets missed
+   * just because it's no longer visible in the top row directly. */
+  function updateMoreBadge(){
+    const anyPending = ['loginBadge','challengeBadge','achievementBadge']
+      .some(id => document.getElementById(id).classList.contains('show'));
+    document.getElementById('moreBadge').classList.toggle('show', anyPending);
   }
 
   function renderAchievements(){
@@ -3618,16 +4079,27 @@
   document.getElementById('closeAchievementsBtn').addEventListener('click', ()=> closeOverlay(achievementsOverlay));
   updateAchievementBadge();
 
+  const statsOverlay = document.getElementById('statsOverlay');
+  document.getElementById('menuStatsStrip').addEventListener('click', (e)=>{ renderStats(); openOverlay(statsOverlay, e.currentTarget); });
+  document.getElementById('closeStatsBtn').addEventListener('click', ()=> closeOverlay(statsOverlay));
+
+  function updateMenuStatsStrip(){
+    document.getElementById('menuStatGames').textContent = (lifetimeStats.gamesPlayed||0).toLocaleString();
+    document.getElementById('menuStatLines').textContent = (lifetimeStats.linesCleared||0).toLocaleString();
+    document.getElementById('menuStatCombo').textContent = (lifetimeStats.maxCombo||0).toLocaleString();
+  }
+  updateMenuStatsStrip();
+
   // ---------- First-run tutorial ----------
   const TUTORIAL_STEPS = [
-    {emoji:'👆', title:'Place Pieces', text:"Drag pieces from the tray at the bottom onto the grid. Green means it fits, red means it doesn't."},
-    {emoji:'💥', title:'Clear Lines', text:'Fill an entire row or column and it explodes, scoring points. Chain clears together to build a combo multiplier!'},
-    {emoji:'⚡', title:'Power Pieces', text:'💣 Bombs clear a 3×3 area. ⚡ Lasers clear a whole row and column. Earn more from Challenges, then drag them from your Inventory bar anytime.'},
+    {sym:'pointer', title:'Place pieces', text:"Drag a piece from the tray onto the grid. Green means it fits, red means it doesn't."},
+    {sym:'burst', title:'Clear lines', text:'Fill a whole row or column and it clears. Chain clears back to back to build a combo multiplier.'},
+    {sym:'bolt', title:'Power pieces', text:'Bombs clear a 3x3 area. Lasers clear a whole row and column. Earn more from challenges, then drag them in from the inventory bar.'},
   ];
   let tutorialStepIdx = 0;
   function renderTutorialStep(idx){
     const step = TUTORIAL_STEPS[idx];
-    document.getElementById('tutorialEmoji').textContent = step.emoji;
+    document.getElementById('tutorialEmoji').innerHTML = iconMarkup(step.sym);
     document.getElementById('tutorialTitle').textContent = step.title;
     document.getElementById('tutorialText').textContent = step.text;
     document.getElementById('tutorialDots').innerHTML = TUTORIAL_STEPS.map((_,i)=>`<span class="tutorialDot ${i===idx?'active':''}"></span>`).join('');
@@ -3649,14 +4121,60 @@
   });
   document.getElementById('tutorialSkipBtn').addEventListener('click', closeTutorial);
 
+  // ---------- Celebration banner queue ----------
+  // A single placement can resolve into several celebrations at once: a
+  // perfect clear that also crosses a score milestone, a multi-clear whose
+  // points cross two milestones in one go. They all render at the same fixed
+  // position (top:32%), so without a queue they stack on top of each other and
+  // none of them are readable.
+  //
+  // Each entry owns its whole beat — banner, confetti, sound, haptics — so the
+  // audio and the text never drift apart. Higher priority goes first, and a
+  // backlog shortens the hold so a big turn doesn't become a parade the player
+  // has to sit through.
+  const bannerQueue = [];
+  let bannerBusy = false;
+  let bannerTimer = null;
+  const BANNER_GAP = 140;      // breath between banners
+  const BANNER_MAX_QUEUED = 3; // beyond this, the least important are dropped
+
+  function enqueueBanner(priority, hold, run){
+    bannerQueue.push({priority, hold, run});
+    // Stable sort by priority so equal-priority banners keep insertion order
+    // (two milestones crossed in one placement should read low-to-high).
+    bannerQueue.sort((a,b)=>b.priority-a.priority);
+    if(bannerQueue.length > BANNER_MAX_QUEUED) bannerQueue.length = BANNER_MAX_QUEUED;
+    if(!bannerBusy) runNextBanner();
+  }
+  function runNextBanner(){
+    bannerTimer = null;
+    const job = bannerQueue.shift();
+    if(!job){ bannerBusy = false; return; }
+    bannerBusy = true;
+    job.run();
+    const hold = bannerQueue.length ? Math.min(job.hold, 1150) : job.hold;
+    bannerTimer = setTimeout(runNextBanner, hold + BANNER_GAP);
+  }
+  // Cancels the pending advance as well as emptying the queue — otherwise a
+  // timer left over from the previous game fires into the new one and advances
+  // the queue a second time, running two banners at once again.
+  function resetBannerQueue(){
+    if(bannerTimer){ clearTimeout(bannerTimer); bannerTimer = null; }
+    bannerQueue.length = 0;
+    bannerBusy = false;
+  }
+
   // ---------- Milestone celebrations ----------
   const MILESTONES = [1000,5000,10000,25000,50000,100000,200000,350000,500000];
   let triggeredMilestonesThisGame = new Set();
   function sfxMilestone(){ tone(700,0.12,'sine',0.12); setTimeout(()=>tone(900,0.12,'sine',0.12),100); setTimeout(()=>tone(1200,0.18,'sine',0.12),200); }
   function spawnMilestoneCelebration(value){
+    enqueueBanner(1, 2100, ()=>runMilestoneCelebration(value));
+  }
+  function runMilestoneCelebration(value){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
-    banner.textContent = `🎉 ${value.toLocaleString()} POINTS! 🎉`;
+    banner.textContent = `🎉 ${value.toLocaleString()} points! 🎉`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2100);
@@ -3697,12 +4215,15 @@
     return 7; // 5+
   }
   function multiClearLabel(n){
-    if(n===2) return '💥 DOUBLE CLEAR!';
-    if(n===3) return '🎆 TRIPLE CLEAR!';
-    if(n===4) return '🎇 QUAD CLEAR!';
-    return '🌟 MEGA CLEAR!!';
+    if(n===2) return '💥 Double clear!';
+    if(n===3) return '🎆 Triple clear!';
+    if(n===4) return '🎇 Quad clear!';
+    return '🌟 Mega clear!';
   }
   function spawnMultiClearCelebration(n, scoreGained){
+    enqueueBanner(2, 1900, ()=>runMultiClearCelebration(n, scoreGained));
+  }
+  function runMultiClearCelebration(n, scoreGained){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
     banner.textContent = `${multiClearLabel(n)} +${scoreGained.toLocaleString()}`;
@@ -3733,6 +4254,9 @@
   }
 
   function spawnPerfectClearCelebration(bonus, multiplier){
+    enqueueBanner(3, 2600, ()=>runPerfectClearCelebration(bonus, multiplier));
+  }
+  function runPerfectClearCelebration(bonus, multiplier){
     const flash = document.createElement('div');
     flash.className = 'fullscreenFlash';
     document.body.appendChild(flash);
@@ -3760,7 +4284,7 @@
 
     const banner = document.createElement('div');
     banner.className = 'perfectClearBanner';
-    banner.innerHTML = `<div class="pcTitle">🌟 PERFECT CLEAR! 🌟</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
+    banner.innerHTML = `<div class="pcTitle">🌟 Perfect Clear! 🌟</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2600);
@@ -3919,9 +4443,9 @@
       let btnHtml;
       if(selected) btnHtml = `<button class="btn small secondary" disabled>✓ Selected</button>`;
       else if(owned) btnHtml = `<button class="btn small" data-skin="${skin.id}" data-action="select">Select</button>`;
-      else if(isRankSkin) btnHtml = `<button class="btn small secondary" disabled>🔒 ${skin.unlockRank}</button>`;
-      else btnHtml = `<button class="btn small secondary" data-skin="${skin.id}" data-action="buy" ${gems<skin.cost?'disabled':''}>${skin.cost}💎</button>`;
-      card.innerHTML = `<button class="themeCardTryBtn" data-try="${skin.id}">👁</button><div class="themeCardSwatch">${swatchHtml}</div><div class="themeCardName">${skin.name}</div>${btnHtml}`;
+      else if(isRankSkin) btnHtml = `<button class="btn small secondary" disabled>${iconMarkup('lock')}${skin.unlockRank}</button>`;
+      else btnHtml = `<button class="btn small secondary" data-skin="${skin.id}" data-action="buy" ${gems<skin.cost?'disabled':''}>${skin.cost}${iconMarkup('gem')}</button>`;
+      card.innerHTML = `<button class="themeCardTryBtn" data-try="${skin.id}">${iconMarkup('eye')}</button><div class="themeCardSwatch">${swatchHtml}</div><div class="themeCardName">${skin.name}</div>${btnHtml}`;
       return card;
     }
 
@@ -3937,10 +4461,10 @@
       skinList.appendChild(grid);
     }
 
-    addSection('🎨 Purchasable', SKINS.filter(s=>!s.unlockRank && !s.unlockScore));
-    addSection('🏆 Rank Rewards', SKINS.filter(s=>!!s.unlockRank));
+    addSection('Purchasable', SKINS.filter(s=>!s.unlockRank && !s.unlockScore));
+    addSection('Rank rewards', SKINS.filter(s=>!!s.unlockRank));
     // Truly hidden until earned — found, not listed.
-    addSection('✨ Secret', SKINS.filter(s=>!!s.unlockScore && SECRET_THEME_ENABLED && best>=s.unlockScore));
+    addSection('Secret', SKINS.filter(s=>!!s.unlockScore && SECRET_THEME_ENABLED && best>=s.unlockScore));
 
     skinList.querySelectorAll('button[data-skin]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -4026,13 +4550,13 @@
   function renderRankDetails(){
     const rank = getRankInfo(rankBest);
     document.getElementById('rankDetailsBadge').className = 'rankDetailsBadge ' + rank.cls;
-    document.getElementById('rankDetailsBadge').textContent = rank.icon;
-    document.getElementById('rankDetailsScore').textContent = `${rank.icon} ${rank.name} — ${rankBest.toLocaleString()} pts`;
+    document.getElementById('rankDetailsBadge').innerHTML = iconMarkup(rank.sym);
+    document.getElementById('rankDetailsScore').textContent = `${rank.name} — ${rankBest.toLocaleString()} pts`;
     const pct = scoreToPercentile(rankBest);
     // Percentile means "beats X%", so a HIGHER number is better — flip it to
     // the more intuitive "top X%" framing (top 1% beats the 99th percentile).
     const topPct = Math.max(0.1, 100 - pct);
-    document.getElementById('rankDetailsPct').textContent = `Top ${topPct < 1 ? topPct.toFixed(1) : topPct.toFixed(0)}% of players`;
+    document.getElementById('rankDetailsPct').textContent = `Top ${topPct < 1 ? topPct.toFixed(1) : topPct.toFixed(0)}% of scores (estimated)`;
 
     const ladder = document.getElementById('rankLadder');
     ladder.innerHTML = '';
@@ -4048,7 +4572,7 @@
       else if(achieved) statusHtml = `<span class="rankRungStatus achieved">✓ Reached</span>`;
       else statusHtml = `<span class="rankRungStatus locked">${(tier.min-rankBest).toLocaleString()} to go</span>`;
       row.innerHTML = `
-        <div class="rankRungIcon">${tier.icon}</div>
+        <div class="rankRungIcon">${iconMarkup(tier.sym)}</div>
         <div class="rankRungInfo">
           <div class="rankRungName">${tier.name}</div>
           <div class="rankRungPoints">${pointsLabel}</div>
@@ -4061,11 +4585,11 @@
   function renderRankGraph(){
     const rank = getRankInfo(rankBest);
     document.getElementById('rankGraphBadge').className = 'rankDetailsBadge ' + rank.cls;
-    document.getElementById('rankGraphBadge').textContent = rank.icon;
-    document.getElementById('rankGraphScore').textContent = `${rank.icon} ${rank.name} — ${rankBest.toLocaleString()} pts`;
+    document.getElementById('rankGraphBadge').innerHTML = iconMarkup(rank.sym);
+    document.getElementById('rankGraphScore').textContent = `${rank.name} — ${rankBest.toLocaleString()} pts`;
     const pct = scoreToPercentile(rankBest);
     const topPct = Math.max(0.1, 100 - pct);
-    document.getElementById('rankGraphPct').textContent = `Top ${topPct < 1 ? topPct.toFixed(1) : topPct.toFixed(0)}% of players`;
+    document.getElementById('rankGraphPct').textContent = `Top ${topPct < 1 ? topPct.toFixed(1) : topPct.toFixed(0)}% of scores (estimated)`;
 
     const chart = document.getElementById('rankBarChart');
     chart.innerHTML = '';
@@ -4088,7 +4612,7 @@
       col.innerHTML = `
         <div class="rankBarValue">${valueLabel}</div>
         <div class="rankBar" style="height:${barHeightPercent(tier.min)}%"></div>
-        <div class="rankBarIcon">${tier.icon}</div>
+        <div class="rankBarIcon">${iconMarkup(tier.sym)}</div>
         <div class="rankBarLabel">${tier.name}</div>`;
       chart.appendChild(col);
     });
@@ -4125,6 +4649,7 @@
         duelScores, duelCombos, duelNoClearStreaks, duelCurrentPlayer,
         grid: grid.map(row=>row.map(cell=>cell ? {...cell} : null)),
         trayPieces: trayPieces.map(p=>p ? {...p, cells:p.cells.map(c=>c.slice())} : null),
+        heldPiece: heldPiece ? {...heldPiece, cells:heldPiece.cells.map(c=>c.slice())} : null,
         nextPeekPiece: nextPeekPiece ? {...nextPeekPiece, cells:nextPeekPiece.cells.map(c=>c.slice())} : null,
         score, combo, noClearStreak,
         streakReviveUsedThisGame, gameOverReviveUsed, gemsAwardedThisGame, perfectClearAwardedThisRound,
@@ -4178,6 +4703,7 @@
     initBoard();
     grid = s.grid;
     trayPieces = s.trayPieces;
+    heldPiece = s.heldPiece || null; // older saves predate the hold slot
     nextPeekPiece = s.nextPeekPiece;
     score = s.score; combo = s.combo; noClearStreak = s.noClearStreak;
     streakReviveUsedThisGame = s.streakReviveUsedThisGame;
@@ -4217,8 +4743,9 @@
     const hasSave = hasSavedGame();
     const playBtn = document.getElementById('playBtn');
     const newBtn = document.getElementById('newGameFromMenuBtn');
-    playBtn.textContent = hasSave ? '▶ CONTINUE' : '▶ PLAY';
-    newBtn.style.display = hasSave ? 'block' : 'none';
+    playBtn.innerHTML = `<span class="ico" data-icon="play"></span>${hasSave ? 'Continue' : 'Play'}`;
+    renderIcons(playBtn);
+    newBtn.style.display = hasSave ? 'inline-flex' : 'none';
   }
 
   function trayCellPx(maxDim){
@@ -4311,13 +4838,28 @@
   let lastTensionEased = 0;
   let tensionShakeWanted = false;
 
-  function maybeShowTensionWarning(){
-    if(localStorage.getItem('blastgrid_seen_tension_warning')) return;
-    localStorage.setItem('blastgrid_seen_tension_warning', '1');
-    const toast = document.getElementById('tensionWarningToast');
+  // Shared by every "first time you see this, here's what it means" toast.
+  // Each one is gated on its own localStorage flag so it only ever shows
+  // once; the tiny busy check just stops two first-ever explainers (tension
+  // + combo-risk) from landing in the same spot on the same turn.
+  let infoToastBusy = false;
+  function showOnceToast(storageKey, toastId, holdMs){
+    if(localStorage.getItem(storageKey)) return;
+    localStorage.setItem(storageKey, '1');
+    const toast = document.getElementById(toastId);
     if(!toast) return;
-    toast.classList.add('show');
-    setTimeout(()=>toast.classList.remove('show'), 5000);
+    const run = ()=>{
+      infoToastBusy = true;
+      toast.classList.add('show');
+      setTimeout(()=>{ toast.classList.remove('show'); infoToastBusy=false; }, holdMs);
+    };
+    if(infoToastBusy) setTimeout(run, holdMs); else run();
+  }
+  function maybeShowTensionWarning(){
+    showOnceToast('blastgrid_seen_tension_warning', 'tensionWarningToast', 5000);
+  }
+  function maybeShowComboRiskWarning(){
+    showOnceToast('blastgrid_seen_combo_risk_warning', 'comboRiskWarningToast', 5000);
   }
 
   function setTensionShake(wanted){
@@ -4481,6 +5023,38 @@
       }
     }
     updateTensionOverlay();
+  }
+
+  // ---------- Hold slot ----------
+  // Bank one piece for later. It survives tray refills, so the real decision is
+  // "is this piece worth a slot I can't use again until I spend it?" — that's
+  // the strategic weight, and it's what the base genre loop is missing.
+  let heldPiece = null;
+  const HOLD_SLOT_INDEX = -2; // -1 is already inventory pieces
+
+  function renderHold(){
+    const slot = document.getElementById('holdSlot');
+    const view = document.getElementById('holdPieceView');
+    if(!slot || !view) return;
+    // Duel shares one board with alternating turns; a single shared bank would
+    // let one player stockpile against the other, so it's off in that mode.
+    slot.classList.toggle('disabled', gameMode === 'duel');
+    view.innerHTML = '';
+    slot.classList.toggle('isEmpty', !heldPiece);
+    if(!heldPiece) return;
+    const {h,w} = shapeSize(heldPiece);
+    const cpx = Math.max(5, Math.min(9, Math.floor(34 / Math.max(w,h))));
+    view.style.gridTemplateColumns = `repeat(${w}, ${cpx}px)`;
+    view.style.gridTemplateRows = `repeat(${h}, ${cpx}px)`;
+    const filled = new Set(heldPiece.cells.map(([r,cc])=>r+'_'+cc));
+    for(let r=0;r<h;r++) for(let cc=0;cc<w;cc++){
+      const pc = document.createElement('div');
+      if(filled.has(r+'_'+cc)){
+        pc.className = 'pcell ' + heldPiece.colorClass;
+        pc.style.width=cpx+'px'; pc.style.height=cpx+'px';
+      }
+      view.appendChild(pc);
+    }
   }
 
   function renderTray(isFreshDeal){
@@ -4734,6 +5308,11 @@
     beginDragWithPiece(e, piece, slotIndex);
   }
 
+  function startDragHold(e){
+    if(gameOver || !heldPiece || gameMode === 'duel') return;
+    beginDragWithPiece(e, heldPiece, HOLD_SLOT_INDEX);
+  }
+
   function startDragInventory(e, kind){
     if(gameOver || inventory[kind] <= 0) return;
     const piece = kind==='bomb'
@@ -4741,6 +5320,7 @@
       : {cells:[[0,0]], colorClass:'blkLaser', isLaser:true, fromInventory:true, invKind:'laser'};
     beginDragWithPiece(e, piece, -1);
   }
+  document.getElementById('holdSlot').addEventListener('pointerdown', startDragHold);
   invBombSlot.addEventListener('pointerdown', (e)=>startDragInventory(e,'bomb'));
   invLaserSlot.addEventListener('pointerdown', (e)=>startDragInventory(e,'laser'));
   document.getElementById('undoBtn').addEventListener('click', performUndo);
@@ -4801,6 +5381,12 @@
 
     ghostEl.style.transform = `translate3d(${(x - (dragState.w*dragState.cellSize)/2).toFixed(1)}px, ${(y - (dragState.h*dragState.cellSize)/2).toFixed(1)}px, 0)`;
 
+    // Remember the true pointer position (not the eased board coord) so the
+    // drop target can be resolved on release.
+    dragState.pointerX = e.clientX; dragState.pointerY = e.clientY;
+    const holdEl = document.getElementById('holdSlot');
+    if(holdEl) holdEl.classList.toggle('canDrop', canBankPiece(dragState) && isOverHold(e.clientX, e.clientY));
+
     // Dragging clearly off the board — e.g. back toward the tray/inventory —
     // cancels the placement instead of clamping to whatever board cell happens
     // to be nearest. A generous margin keeps normal edge drops feeling forgiving.
@@ -4859,15 +5445,41 @@
     }
   }
 
+  function isOverHold(x, y){
+    const el = document.getElementById('holdSlot');
+    if(!el) return false;
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  }
+  /** Only real tray pieces can be banked, only into an empty slot. Inventory
+   * pieces (-1) and the held piece itself (-2) are excluded. */
+  function canBankPiece(ds){
+    return ds && ds.slotIndex >= 0 && !heldPiece && gameMode !== 'duel';
+  }
+
   function onDragEnd(){
     if(!dragState) return;
     window.removeEventListener('pointermove', onDragMove);
     window.removeEventListener('pointerup', onDragEnd);
     ghostEl.style.display='none';
     document.body.style.userSelect='';
-    const {slotIndex, piece, lastR0, lastC0, lastValid} = dragState;
+    const {slotIndex, piece, lastR0, lastC0, lastValid, pointerX, pointerY} = dragState;
+    const bankIt = canBankPiece(dragState) && pointerX !== undefined && isOverHold(pointerX, pointerY);
     clearPreview();
     dragState = null;
+    const holdEl = document.getElementById('holdSlot');
+    if(holdEl) holdEl.classList.remove('canDrop');
+
+    if(bankIt){
+      heldPiece = piece;
+      trayPieces[slotIndex] = null;
+      renderTray(false);
+      renderHold();
+      saveGameState();
+      haptic(14);
+      msgEl.textContent = 'Piece held — drag it out whenever you need it.';
+      return;
+    }
     if(lastValid && lastR0 !== null) commitPlacement(slotIndex, piece, lastR0, lastC0);
     else haptic([8,20,8]);
   }
@@ -4898,9 +5510,11 @@
   function spawnComboLostPopup(lostCombo){
     if(lostCombo < 5) return; // small losses aren't worth interrupting the player over
     const tier = lostCombo>=40 ? 'huge' : lostCombo>=20 ? 'big' : 'medium';
-    const text = tier==='huge' ? `💔💔 HUGE COMBO LOST — x${lostCombo}`
-      : tier==='big' ? `💔 Combo Lost — x${lostCombo}`
-      : `Combo Lost — x${lostCombo}`;
+    // Escalating emoji for the two tiers worth interrupting the player over;
+    // 'medium' stays plain since it's the one that fires most often.
+    const text = tier==='huge' ? `💔💔 Huge combo lost, x${lostCombo}`
+      : tier==='big' ? `💔 Combo lost, x${lostCombo}`
+      : `Combo lost, x${lostCombo}`;
     const el = document.createElement('div');
     el.className = 'comboLostPopup combo-lost-' + tier;
     el.textContent = text;
@@ -4919,6 +5533,10 @@
     }
   }
 
+  // These are the one place in the whole UI that's allowed to shout — a combo
+  // streak is a genuine adrenaline moment, and a shimmering gradient title
+  // with an exclamation mark is the payoff for it. That's different from
+  // slapping "!" on a settings label: this is celebration text, not chrome.
   const STREAK_TITLES = [
     {min:60, text:'👑 GODLIKE!', cls:'streak-godlike'},
     {min:40, text:'🌟 LEGENDARY!', cls:'streak-legendary'},
@@ -4955,6 +5573,10 @@
    * `streakStatBox.style.opacity = ...` call with one consistent source. */
   function updateComboRiskVisual(streak){
     streakStatBox.className = 'streakStat' + (streak>0 ? ' risk-'+Math.min(streak,4) : '');
+    // First time the combo counter ever starts shaking, explain why —
+    // otherwise the very first miss-streak of a brand new player's first game
+    // just looks like the UI glitching.
+    if(streak>0) maybeShowComboRiskWarning();
   }
 
   function updateComboGlow(comboVal){
@@ -5120,7 +5742,7 @@
     const cy = rect.top + rect.height/2 - boardRect.top;
     const el = document.createElement('div');
     el.className = 'gemPopup';
-    el.textContent = '+1💎';
+    el.textContent = '+1';
     el.style.left = cx+'px'; el.style.top = cy+'px';
     fxLayer.appendChild(el);
     requestAnimationFrame(()=>el.classList.add('animate'));
@@ -5307,6 +5929,7 @@
     undoSnapshot = {
       grid: grid.map(row=>row.map(cell=>cell ? {...cell} : null)),
       trayPieces: trayPieces.map(p=>p ? {...p, cells:p.cells.map(c=>c.slice())} : null),
+      heldPiece: heldPiece ? {...heldPiece, cells:heldPiece.cells.map(c=>c.slice())} : null,
       score, combo, noClearStreak,
       inventory: {...inventory},
       sessionLines, sessionBestCombo, sessionPieces,
@@ -5354,6 +5977,9 @@
       inventory[piece.invKind] = Math.max(0, inventory[piece.invKind]-1);
       saveInventory();
       renderInventory();
+    } else if(slotIndex === HOLD_SLOT_INDEX){
+      heldPiece = null;
+      renderHold();
     } else {
       trayPieces[slotIndex] = null;
     }
@@ -5422,7 +6048,7 @@
       sfxLaser();
       haptic([15,15,15,15,30]);
       bumpDailyStat('specialUsed',1); bumpWeeklyStat('specialUsed',1); bumpLifetimeStat('specialUsed',1);
-      msgEl.textContent = `⚡ Laser cleared row & column!`;
+      msgEl.textContent = `Laser cleared the row and column`;
     }
 
     const [popX, popY] = boardCenterOfCells(placedCells);
@@ -5489,13 +6115,13 @@
           const perfectBonus = 500 * multiplier;
           turnScore += perfectBonus;
           spawnPerfectClearCelebration(perfectBonus, multiplier);
-          msgEl.textContent = `✨ PERFECT CLEAR! x${multiplier} ✨`;
+          msgEl.textContent = `✨ Perfect clear, x${multiplier}!`;
           perfectClearAwardedThisRound = true;
         } else if(naturalLines >= 2){
           spawnMultiClearCelebration(naturalLines, turnScore);
           msgEl.textContent = `${multiClearLabel(naturalLines)} +${turnScore.toLocaleString()}`;
         } else if(!piece.isBomb && !piece.isLaser){
-          msgEl.textContent = combo>1 ? `🔥 Combo x${multiplier}! +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared!`;
+          msgEl.textContent = combo>1 ? `🔥 Combo x${multiplier}! +${turnScore}` : `${totalLines} line${totalLines>1?'s':''} cleared`;
           haptic(combo>=3 ? [20,30,20,30,20] : [20,30,20]);
         }
 
@@ -5677,11 +6303,11 @@
       const gemAmount = Math.round(100 * Math.sqrt(Math.max(tier.min,silverMin)/silverMin));
       const itemType = Math.random()<0.5 ? 'bomb' : 'laser';
       const itemAmount = 1 + Math.floor(Math.random()*2); // 1 or 2
-      const itemIcon = itemType==='bomb' ? '💣' : '⚡';
+      const itemIcon = iconMarkup(itemType==='bomb' ? 'bomb' : 'bolt');
       grantReward({gems: gemAmount, [itemType]: itemAmount});
       rewardEl.style.display = 'flex';
       rewardEl.innerHTML = `
-        <div class="rewardChip rc-gem"><div class="rewardChipIcon">💎</div><div class="rewardChipValue">+${gemAmount}</div></div>
+        <div class="rewardChip rc-gem"><div class="rewardChipIcon">${iconMarkup('gem')}</div><div class="rewardChipValue">+${gemAmount}</div></div>
         <div class="rewardChip rc-${itemType}" style="animation-delay:0.1s"><div class="rewardChipIcon">${itemIcon}</div><div class="rewardChipValue">+${itemAmount}</div></div>`;
     } else {
       rewardEl.style.display = 'none';
@@ -5728,9 +6354,9 @@
       const cardEl = document.querySelector('#rankUpOverlay .rankUpCard');
 
       oldBadgeEl.className = 'rankUpBadgeOld ' + oldRank.cls;
-      oldBadgeEl.textContent = oldRank.icon;
+      oldBadgeEl.innerHTML = iconMarkup(oldRank.sym);
       newBadgeEl.className = 'rankUpBadgeBig ' + newRank.cls;
-      newBadgeEl.textContent = newRank.icon;
+      newBadgeEl.innerHTML = iconMarkup(newRank.sym);
       document.getElementById('rankUpNewRankName').textContent = `You're now ${newRank.name}!`;
 
       // Full-screen takeover in the new rank's own color, with that rank's icon
@@ -5765,6 +6391,7 @@
   function showGameOverModal(title, allowContinue){
     gameOver = true;
     clearSavedGame();
+    recordScoreHistory();
     stopTensionEffects();
     sfxGameOver();
     haptic(200);
@@ -5781,7 +6408,7 @@
       gemsAwardedThisGame = true;
       saveGems();
       updateGemDisplays();
-      gemsLine.textContent = '+3 💎 end-of-game bonus!';
+      gemsLine.textContent = '+3 gems, end-of-game bonus';
     } else {
       gemsLine.textContent = '';
     }
@@ -5810,7 +6437,7 @@
         powerupBtn.style.display = haveInventory ? 'block' : 'none';
         if(haveInventory){
           const kind = inventory.bomb>0 ? 'Bomb' : 'Laser';
-          powerupBtn.textContent = `💣 Use a ${kind} — Keep Playing`;
+          powerupBtn.innerHTML = `${iconMarkup('bomb')}Use a ${kind}`;
         }
         document.getElementById('gameOverText').textContent = adsRemoved
           ? "You're about to lose the game — are you sure? Clear some space to keep playing (free — ads removed)."
@@ -5826,14 +6453,14 @@
       const myPct = scoreToPercentile(score);
       if(challengeTargetScore===null){
         createBlock.style.display = 'block';
-        resultText.textContent = '🎯 Challenge created!';
+        resultText.textContent = 'Challenge created';
         pctText.textContent = `That beats roughly ${myPct.toFixed(0)}% of runs — see if your friend can top it.`;
         document.getElementById('challengeCodeDisplay').textContent = encodeChallengeCode(challengeSeed, score);
       } else {
         createBlock.style.display = 'none';
         const theirPct = scoreToPercentile(challengeTargetScore);
-        if(score > challengeTargetScore) resultText.textContent = `🏆 You won! ${score.toLocaleString()} vs their ${challengeTargetScore.toLocaleString()}`;
-        else if(score === challengeTargetScore) resultText.textContent = `😮 Exact tie — ${score.toLocaleString()} apiece!`;
+        if(score > challengeTargetScore) resultText.textContent = `You won, ${score.toLocaleString()} to ${challengeTargetScore.toLocaleString()}`;
+        else if(score === challengeTargetScore) resultText.textContent = `Exact tie, ${score.toLocaleString()} apiece`;
         else resultText.textContent = `You scored ${score.toLocaleString()} — they got ${challengeTargetScore.toLocaleString()}. So close!`;
         pctText.textContent = `You beat ~${myPct.toFixed(0)}% of runs, they beat ~${theirPct.toFixed(0)}%.`;
       }
@@ -5855,13 +6482,15 @@
 
   function checkGameOver(){
     const active = trayPieces.filter(p=>p!==null);
-    const trayPlayable = active.some(p=>hasAnyPlacement(p));
+    // A banked piece is still a legal move, so the board isn't stuck while one
+    // exists and fits — ending the game here would strand a playable piece.
+    const trayPlayable = active.some(p=>hasAnyPlacement(p)) || (heldPiece && hasAnyPlacement(heldPiece));
     if(!trayPlayable && active.length>0){
       nudgeDifficulty(-0.35); // getting stuck at all is the strongest struggle signal
       // Zen and Time Attack never end from a stuck board — only their own rules do.
       if(gameMode==='zen' || gameMode==='timeattack'){
         clearSpaceForRevive();
-        msgEl.textContent = gameMode==='zen' ? '🧘 Board refreshed — keep going.' : 'Space cleared — keep the clock running!';
+        msgEl.textContent = gameMode==='zen' ? 'Board refreshed.' : 'Space cleared.';
         return;
       }
       if(gameMode==='duel'){
@@ -5883,7 +6512,7 @@
     // current player's live score/combo hasn't been saved back yet.
     duelScores[duelCurrentPlayer] = score;
     const p1 = duelScores[0], p2 = duelScores[1];
-    const title = p1===p2 ? "🤝 It's a Tie!" : (p1>p2 ? '🏆 Player 1 Wins!' : '🏆 Player 2 Wins!');
+    const title = p1===p2 ? "It's a tie" : (p1>p2 ? 'Player 1 wins' : 'Player 2 wins');
     document.getElementById('duelOverTitle').textContent = title;
     document.getElementById('duelResultP1').textContent = p1.toLocaleString();
     document.getElementById('duelResultP2').textContent = p2.toLocaleString();
@@ -5934,7 +6563,7 @@
   document.getElementById('copyChallengeCodeBtn').addEventListener('click', ()=>{
     const code = document.getElementById('challengeCodeDisplay').textContent;
     const btn = document.getElementById('copyChallengeCodeBtn');
-    const done = ()=>{ btn.textContent = '✅ Copied!'; setTimeout(()=>{ btn.textContent = '📋 Copy Code'; }, 1600); };
+    const done = ()=>{ btn.textContent = 'Copied'; setTimeout(()=>{ btn.innerHTML = `${iconMarkup('clipboard')}Copy code`; }, 1600); };
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(code).then(done).catch(()=>{
         btn.textContent = code; // fallback: show it inline so they can select/copy manually
@@ -5988,6 +6617,7 @@
     sessionLines = 0; sessionBestCombo = 0; sessionPieces = 0; sessionGems = 0;
     undoSnapshot = null; undoUsedThisGame = false; nextPeekPiece = null;
     triggeredMilestonesThisGame = new Set();
+    resetBannerQueue();
     bumpLifetimeStat('gamesPlayed', 1);
     scoreEl.textContent = 0; comboEl.textContent = 0;
     updateComboGlow(0);
@@ -6006,6 +6636,7 @@
     initBoard();
     updateTensionOverlay();
     trayPieces = [null,null,null];
+    heldPiece = null;
     refillTrayIfEmpty();
     renderTray(true);
     renderInventory();
@@ -6068,10 +6699,28 @@
     });
   }
 
-  showScreen('menu');
+  renderIcons();
+
+  // The boot loader already covers the screen, so apply the initial screen
+  // directly rather than running it through the veil transition.
+  applyScreen('menu');
+
+  // Dismiss the boot loader once everything is initialised. The bar animates to
+  // full first so it reads as "finished loading" rather than just vanishing —
+  // the game itself loads in well under 200ms, so this is presentation, not a
+  // real wait. Kept deliberately brief so it never feels like a delay.
+  (function dismissBootLoader(){
+    const loader = document.getElementById('bootLoader');
+    const fill = document.getElementById('bootBarFill');
+    if(!loader) return;
+    requestAnimationFrame(()=>{ if(fill) fill.style.width = '55%'; });
+    setTimeout(()=>{ if(fill) fill.style.width = '100%'; }, 260);
+    setTimeout(()=>{ loader.classList.add('hidden'); }, 620);
+  })();
+
   const pendingLoginOnLoad = computePendingLogin();
   if(pendingLoginOnLoad){
-    setTimeout(()=>{ renderLoginOverlay(); openOverlay(dailyRewardsOverlay, null); }, 500);
+    setTimeout(()=>{ renderLoginOverlay(); openOverlay(dailyRewardsOverlay, null); }, 1200);
   }
   // ---------- Hidden developer console ----------
   // Trigger: tap the title 7 times within 3 seconds. Not persisted across
@@ -6183,16 +6832,19 @@
           updateRankBadge();
           document.getElementById('devHighScoreInput').value = best;
         } else if(action==='resetStats'){
-          if(!confirm('Reset ALL stats?\n\nClears: high score, rank, lifetime/daily/weekly stats, achievements, daily & weekly challenges, login streak.\n\nDoes NOT touch: gems, inventory, owned themes, settings.')) return;
+          if(!confirm('Reset ALL stats?\n\nClears: high score, rank, lifetime/daily/weekly stats, score history, achievements, daily & weekly challenges, login streak.\n\nDoes NOT touch: gems, inventory, owned themes, settings.')) return;
           ['blastgrid_lifetime_stats','blastgrid_daily_stats','blastgrid_weekly_stats',
            'blastgrid_achievements_claimed','blastgrid_daily','blastgrid_weekly',
            'blastgrid_daily_date','blastgrid_daily_score','blastgrid_login_streak',
-           'blastgrid_login_last_claim'].forEach(k=>localStorage.removeItem(k));
+           'blastgrid_login_last_claim','blastgrid_score_history'].forEach(k=>localStorage.removeItem(k));
+          lifetimeStats = { gamesPlayed:0, piecesPlaced:0, linesCleared:0, specialUsed:0, maxCombo:0 };
+          scoreHistory = [];
           best = 0; rankBest = 0; sessionStartBest = 0;
           localStorage.setItem('blastgrid_best','0');
           localStorage.setItem('blastgrid_rank_best','0');
           bestEl.textContent = '0'; menuHighScoreEl.textContent = '0';
           updateRankBadge();
+          updateMenuStatsStrip();
           document.getElementById('devHighScoreInput').value = 0;
           alert('Stats reset.');
         }
