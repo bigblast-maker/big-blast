@@ -22,8 +22,12 @@
  */
 
 const path = require('path');
-const PW = '/home/claude/.npm-global/lib/node_modules/playwright';
-const CHROME = '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';
+// Resolve Playwright from wherever it actually is rather than the absolute
+// sandbox path this was first written against, so the suite runs on any
+// machine. Override either with PLAYWRIGHT_PATH / CHROME_PATH if needed.
+const PW = process.env.PLAYWRIGHT_PATH || 'playwright';
+// Empty string means "let Playwright pick its own bundled browser".
+const CHROME = process.env.CHROME_PATH || '';
 
 // ---------- args ----------
 const args = process.argv.slice(2);
@@ -33,7 +37,9 @@ const getArg = (name, def) => {
 };
 const RUNS = parseInt(getArg('runs', '5'), 10);
 const HEADED = args.includes('--headed');
-const GAME_FILE = getArg('file', '/mnt/user-data/outputs/big-blast.html');
+// Defaults to the copy sitting next to this script, so `node bigblast-test-suite.js`
+// works from a clone without passing --file.
+const GAME_FILE = getArg('file', path.join(__dirname, 'big-blast.html'));
 const MAX_PLACEMENTS = parseInt(getArg('max-placements', '400'), 10);
 
 // ---------- results collection ----------
@@ -677,7 +683,7 @@ async function testEdgeCases(page) {
 async function main() {
   const { chromium } = require(PW);
   const browser = await chromium.launch(
-    HEADED ? { headless: false } : { executablePath: CHROME }
+    HEADED ? { headless: false } : (CHROME ? { executablePath: CHROME } : {})
   );
 
   console.log('='.repeat(62));

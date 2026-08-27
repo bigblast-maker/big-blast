@@ -4,3 +4,6 @@ android/.gradle/
 *.keystore
 *.jks
 icon-sheet.html
+node_modules/
+package-lock.json
+package.json
