@@ -51,13 +51,14 @@
   .btn .ico{ font-size:1.15em; margin-top:-0.05em; flex-shrink:0; }
   .btn:active{ box-shadow:0 1px 0 var(--accent-dim); transform:translateY(2px); }
   .btn.pressShake{ animation:btnPressShake 0.32s ease; }
+  /* A press is a press, not an earthquake. This used to wobble laterally four
+     times over 0.32s on every single tap; now it just travels down and settles,
+     which reads as responsive instead of frantic. Board shake and the tension
+     effect still shake, because there the shake IS the information. */
   @keyframes btnPressShake{
-    0%{ transform:translateY(0) translateX(0); }
-    15%{ transform:translateY(var(--pressY)) translateX(-2px); }
-    35%{ transform:translateY(var(--pressY)) translateX(2px); }
-    55%{ transform:translateY(var(--pressY)) translateX(-1px); }
-    75%{ transform:translateY(var(--pressY)) translateX(1px); }
-    100%{ transform:translateY(0) translateX(0); }
+    0%{ transform:translateY(0); }
+    38%{ transform:translateY(var(--pressY)); }
+    100%{ transform:translateY(0); }
   }
   .btn.secondary{ --pressY:2px; background:var(--panel); color:var(--text); box-shadow:0 3px 0 #131a24; }
   .btn.secondary:active{ box-shadow:0 1px 0 #131a24; transform:translateY(2px); }
@@ -73,12 +74,9 @@
   .iconBtn:active{ background:rgba(255,255,255,0.16); }
   .iconBtn.pressShake{ animation:iconBtnPressShake 0.32s ease; }
   @keyframes iconBtnPressShake{
-    0%{ transform:scale(1) translateX(0); }
-    15%{ transform:scale(0.88) translateX(-2px); }
-    35%{ transform:scale(0.88) translateX(2px); }
-    55%{ transform:scale(0.88) translateX(-1px); }
-    75%{ transform:scale(0.88) translateX(1px); }
-    100%{ transform:scale(1) translateX(0); }
+    0%{ transform:scale(1); }
+    38%{ transform:scale(0.9); }
+    100%{ transform:scale(1); }
   }
 
   /* Bigger, named top-row buttons (Settings + More) — replaces a row of 6
@@ -92,6 +90,16 @@
   .iconBtnLabeled:active{ background:rgba(255,255,255,0.16); }
   .ico{ display:inline-flex; align-items:center; justify-content:center; }
   .ico svg{ width:1em; height:1em; display:block; }
+  /* Sizing for icons injected straight into a container by iconMarkup(). */
+  .icoSvg{ width:1em; height:1em; flex-shrink:0; vertical-align:-0.125em; }
+  /* Rank chrome: the tier's colour comes from the .rank-* class on the badge,
+     so the glyph just inherits it. */
+  .rankBadge{ gap:6px; }
+  .rankBadge .icoSvg{ width:1.05em; height:1.05em; }
+  .rankRungIcon .icoSvg, .rankBarIcon .icoSvg{ width:0.85em; height:0.85em; }
+  .historyRank .icoSvg{ width:1em; height:1em; color:var(--accent); }
+  .timerBadge{ display:inline-flex; align-items:center; gap:6px; }
+  .themeCardTryBtn .icoSvg{ width:1em; height:1em; }
   .iconBtnLabeledIcon{ font-size:var(--fs-xl); line-height:1; }
   .iconBtnLabeledText{ font-size:var(--fs-base); font-weight:700; color:var(--text); }
   .iconBtnLabeled .badgeDot{ top:5px; right:5px; }
@@ -120,11 +128,14 @@
     border-radius:var(--r-md); padding:0 12px; height:34px; font-weight:800; color:var(--text); font-size:var(--fs-base);
     flex-shrink:0; white-space:nowrap;
   }
-  .gemPill.bump{ animation:gemPillBump 0.5s ease; }
+  .gemPill.bump{ animation:gemPillBump 0.42s cubic-bezier(.34,1.4,.64,1); }
+  /* Was a 1.55x jump with a cyan halo. The design system says solid fills and
+     no decorative glow, and a counter ticking up does not need to be the
+     loudest thing on screen — a small overshoot reads as "that registered". */
   @keyframes gemPillBump{
-    0%{ transform:scale(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
-    35%{ transform:scale(1.55); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px 5px rgba(120,235,255,0.85); }
-    100%{ transform:scale(1); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.16); }
+    100%{ transform:scale(1); }
   }
 
   .flyingGem{
@@ -440,12 +451,16 @@
   .rankProgressText::after{ content:' ›'; color:var(--gold); font-weight:900; }
   .rankProgressBar.maxed .rankProgressFill{ background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan)); }
 
-  .modeSelector{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+  /* An explicit 3-across grid. Free-wrapping flex dropped the six modes as
+     4 + 2, which reads as an accident of the container width rather than a
+     layout; 3 x 2 is even and gives the longer labels room not to wrap. */
+  .modeSelector{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:10px; justify-items:stretch; }
+  #challengeModeSelector{ grid-template-columns:1fr; }
   .modeCard{
     font-family:inherit; border:none; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:4px;
     background:rgba(255,255,255,0.06); color:var(--muted);
-    border-radius:var(--r-lg); padding:10px 8px; width:74px; font-size:var(--fs-xl);
+    border-radius:var(--r-lg); padding:11px 8px; width:auto; font-size:var(--fs-xl);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
     transition:transform 0.12s ease;
   }
@@ -463,12 +478,9 @@
   .modeCard.active span:not(.ico){ color:var(--accent); }
   .modeCard.pressShake{ animation:modeCardPressShake 0.32s ease; }
   @keyframes modeCardPressShake{
-    0%{ transform:scale(1) translateX(0); }
-    15%{ transform:scale(0.94) translateX(-2px); }
-    35%{ transform:scale(0.94) translateX(2px); }
-    55%{ transform:scale(0.94) translateX(-1px); }
-    75%{ transform:scale(0.94) translateX(1px); }
-    100%{ transform:scale(1) translateX(0); }
+    0%{ transform:scale(1); }
+    38%{ transform:scale(0.95); }
+    100%{ transform:scale(1); }
   }
   .modeDesc{ font-size:var(--fs-sm); color:var(--muted); max-width:280px; text-align:center; margin-bottom:18px; min-height:28px; line-height:1.3; }
 
@@ -1064,7 +1076,10 @@
   .switch input{ opacity:0; width:0; height:0; }
   .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.15); border-radius:var(--r-lg); transition:0.2s; }
   .slider::before{ content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:white; border-radius:50%; transition:0.2s; }
-  input:checked + .slider{ background:var(--green); }
+  /* Amber, not green. A column of saturated green toggles was the loudest
+     thing in the settings panel, and the palette is meant to hold exactly one
+     accent so the board keeps the only strong colour on screen. */
+  input:checked + .slider{ background:var(--accent); }
   input:checked + .slider::before{ transform:translateX(20px); }
 
   .adSpinner{ width:44px; height:44px; border-radius:50%; border:4px solid rgba(255,255,255,0.15); border-top-color:var(--gold); margin:0 auto 16px auto; animation:spin 0.8s linear infinite; }
@@ -1647,7 +1662,7 @@
 
   <div id="gameScreen">
     <div id="tensionOverlay"></div>
-    <div id="tensionWarningToast">😬 Board's getting risky — the screen tenses up as danger rises. Clear a line to ease it!</div>
+    <div id="tensionWarningToast">Running out of room. Clear a line to ease the pressure.</div>
     <div id="topBar">
       <button class="iconBtn" id="settingsBtnGame"><span class="ico" data-icon="settings"></span></button>
       <button class="iconBtn" id="homeBtn"><span class="ico" data-icon="home"></span></button>
@@ -1662,14 +1677,14 @@
         <div class="duelPlayerLabel">Player 1</div>
         <div class="duelPlayerValue" id="duelP1Value">0</div>
       </div>
-      <div class="duelVs">⚔️</div>
+      <div class="duelVs"><span class="ico" data-icon="swords"></span></div>
       <div class="duelPlayerScore" id="duelP2Box">
         <div class="duelPlayerLabel">Player 2</div>
         <div class="duelPlayerValue" id="duelP2Value">0</div>
       </div>
     </div>
     <div id="duelTurnBanner"></div>
-    <div class="timerBadge" id="timerBadge" style="display:none;">⏱ <span id="timerText">3:00</span></div>
+    <div class="timerBadge" id="timerBadge" style="display:none;"><span class="ico" data-icon="timer"></span><span id="timerText">3:00</span></div>
     <div class="streakStat" id="streakStatBox">Combo <span id="combo">0</span></div>
     <div class="streakTitle" id="streakTitle" style="display:none;"></div>
     <div id="board"></div>
@@ -1687,7 +1702,7 @@
         <div class="nextGrid" id="nextGrid"></div>
       </div>
     </div>
-    <div id="msg">Drag a piece onto the grid — clear rows or columns!</div>
+    <div id="msg">Drag a piece onto the grid to fill a row or column.</div>
   </div>
 
   <div id="ghost" style="display:none;"></div>
@@ -1722,10 +1737,10 @@
 
 <div class="overlay" id="streakReviveOverlay">
   <div class="modalCard">
-    <h2>⚠️ Combo At Risk!</h2>
+    <h2>Combo at risk</h2>
     <p>You're about to lose your <span id="brokenStreakNum">0</span>x combo — are you sure you want to continue? (Ad revive is once per game.)</p>
     <div class="modalButtons">
-      <button class="btn big" id="watchAdStreakBtn">🎬 Watch Ad — Keep Combo</button>
+      <button class="btn big" id="watchAdStreakBtn"><span class="ico" data-icon="video"></span>Watch ad, keep combo</button>
       <button class="btn secondary small" id="declineStreakBtn">No, let it go</button>
     </div>
   </div>
@@ -1733,7 +1748,7 @@
 
 <div class="overlay" id="duelOverOverlay">
   <div class="modalCard">
-    <h2 id="duelOverTitle">🏆 Player 1 Wins!</h2>
+    <h2 id="duelOverTitle">Player 1 wins</h2>
     <div class="duelResultRow">
       <div class="duelResultCol" id="duelResultP1Col">
         <div class="duelResultLabel">Player 1</div>
@@ -1745,7 +1760,7 @@
       </div>
     </div>
     <div class="modalButtons">
-      <button class="btn" id="duelRematchBtn">🔁 Rematch</button>
+      <button class="btn" id="duelRematchBtn"><span class="ico" data-icon="refresh"></span>Rematch</button>
       <button class="btn secondary" id="duelHomeBtn">Home</button>
     </div>
   </div>
@@ -1760,7 +1775,7 @@
       <div class="recapItem"><div class="recapVal" id="recapLines">0</div><div class="recapLbl">Lines</div></div>
       <div class="recapItem"><div class="recapVal" id="recapCombo">0</div><div class="recapLbl">Best Combo</div></div>
       <div class="recapItem"><div class="recapVal" id="recapPieces">0</div><div class="recapLbl">Pieces</div></div>
-      <div class="recapItem"><div class="recapVal" id="recapGems">0</div><div class="recapLbl">💎 Earned</div></div>
+      <div class="recapItem"><div class="recapVal" id="recapGems">0</div><div class="recapLbl">Gems earned</div></div>
     </div>
     <p id="gameOverGemsLine" style="color:var(--gold); font-weight:700; margin-bottom:10px;"></p>
     <div id="challengeResultSection" style="display:none; background:rgba(255,255,255,0.06); border-radius:var(--r-lg); padding:14px; margin-bottom:14px;">
@@ -1769,13 +1784,13 @@
       <div id="challengeCreateBlock" style="display:none;">
         <div style="font-size:var(--fs-sm); color:var(--muted); margin-bottom:6px;">Send this code to a friend:</div>
         <div id="challengeCodeDisplay" style="font-size:var(--fs-lg); font-weight:900; letter-spacing:1px; color:var(--gold); background:rgba(0,0,0,0.25); border-radius:var(--r-md); padding:10px; margin-bottom:8px;"></div>
-        <button class="btn small" id="copyChallengeCodeBtn">📋 Copy Code</button>
+        <button class="btn small" id="copyChallengeCodeBtn"><span class="ico" data-icon="clipboard"></span>Copy code</button>
       </div>
     </div>
     <p id="gameOverText">You're about to lose the game — are you sure you want to continue?</p>
     <div class="modalButtons">
-      <button class="btn big" id="watchAdGameOverBtn">🎬 Watch Ad — Keep Playing</button>
-      <button class="btn big" id="usePowerupGameOverBtn">💣 Use Power-Up — Keep Playing</button>
+      <button class="btn big" id="watchAdGameOverBtn"><span class="ico" data-icon="video"></span>Watch ad, keep playing</button>
+      <button class="btn big" id="usePowerupGameOverBtn"><span class="ico" data-icon="bomb"></span>Use a power-up</button>
       <button class="btn secondary small" id="endGameBtn">No, end game</button>
     </div>
   </div>
@@ -1791,7 +1806,7 @@
 
 <div id="devConsole" style="display:none;">
   <div id="devConsoleHeader">
-    <span>🛠️ Dev Console</span>
+    <span>Dev console</span>
     <button id="closeDevConsoleBtn" type="button">✕</button>
   </div>
   <div id="devConsoleBody">
@@ -1822,7 +1837,7 @@
       <button data-dev="maxRank" type="button">Jump to Max Rank</button>
     </div>
     <div class="devRowFull devDangerRow">
-      <button data-dev="resetStats" type="button">⚠ Reset All Stats</button>
+      <button data-dev="resetStats" type="button">Reset all stats</button>
     </div>
   </div>
 </div>
@@ -1865,7 +1880,7 @@
 
 <div class="overlay" id="enterCodeOverlay">
   <div class="modalCard">
-    <h2>🎯 Enter Challenge Code</h2>
+    <h2>Enter challenge code</h2>
     <p>Paste the code your friend sent you — you'll play the exact same puzzle they did.</p>
     <input type="text" id="challengeCodeInput" placeholder="BB-XXXXX-XXX"
       style="width:100%; box-sizing:border-box; padding:12px; border-radius:var(--r-md); border:none; background:rgba(255,255,255,0.1); color:var(--text); font-size:var(--fs-md); text-align:center; letter-spacing:1px; margin-bottom:8px; font-weight:700;">
@@ -1879,7 +1894,7 @@
 
 <div class="overlay" id="challengesOverlay">
   <div class="modalCard wide">
-    <h2>🎯 Challenges</h2>
+    <h2>Challenges</h2>
     <div class="challengeSectionTitle"><span>Daily — resets every day</span><span class="countdownText" id="dailyResetCountdown"></span></div>
     <div id="dailyChallengeList"></div>
     <div class="challengeSectionTitle"><span>Weekly — resets every Monday</span><span class="countdownText" id="weeklyResetCountdown"></span></div>
@@ -1890,7 +1905,7 @@
 
 <div class="overlay" id="dailyRewardsOverlay">
   <div class="modalCard wide">
-    <h2>🎁 Daily Rewards</h2>
+    <h2>Daily rewards</h2>
     <div id="loginCurrentStreak" style="font-weight:700; color:var(--gold); margin-bottom:4px;"></div>
     <p style="margin-top:0;">Come back every day — rewards keep growing the longer your streak runs.</p>
     <div id="loginDayCardsRow" class="loginDayCardsRow"></div>
@@ -1901,7 +1916,7 @@
 
 <div class="overlay" id="achievementsOverlay">
   <div class="modalCard wide">
-    <h2>🏆 Achievements</h2>
+    <h2>Achievements</h2>
     <p style="margin-top:-10px;">Permanent milestones — these never reset.</p>
     <div id="achievementList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeAchievementsBtn">Close</button></div>
@@ -1940,7 +1955,7 @@
 
 <div class="overlay" id="statsOverlay">
   <div class="modalCard wide">
-    <h2>📊 Your Stats</h2>
+    <h2>Your stats</h2>
     <div class="challengeSectionTitle"><span>Lifetime</span></div>
     <div class="statsGrid" id="lifetimeStatsGrid"></div>
     <div class="challengeSectionTitle"><span>Best Runs</span></div>
@@ -1963,8 +1978,8 @@
 <div class="overlay" id="shopOverlay">
 
   <div class="modalCard wide">
-    <h2>🛒 Shop</h2>
-    <div class="shopGemBar">💎 <span id="shopGemCount">0</span> Gems</div>
+    <h2>Shop</h2>
+    <div class="shopGemBar"><span class="ico" data-icon="gem"></span><span id="shopGemCount">0</span> gems</div>
 
     <div class="shopSectionTitle">Remove Ads</div>
     <div class="shopRow">
@@ -1977,26 +1992,26 @@
 
     <div class="shopSectionTitle">Gem Packs (simulated)</div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">100 💎</div><div class="shopSub">Small pack</div></div>
+      <div class="shopInfo"><div class="shopTitle">100<span class="ico" data-icon="gem"></span></div><div class="shopSub">Small pack</div></div>
       <button class="btn small secondary" id="buyGems100">$0.99</button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">550 💎</div><div class="shopSub">Best value</div></div>
+      <div class="shopInfo"><div class="shopTitle">550<span class="ico" data-icon="gem"></span></div><div class="shopSub">Best value</div></div>
       <button class="btn small secondary" id="buyGems550">$4.99</button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">1200 💎</div><div class="shopSub">Big pack</div></div>
+      <div class="shopInfo"><div class="shopTitle">1200<span class="ico" data-icon="gem"></span></div><div class="shopSub">Big pack</div></div>
       <button class="btn small secondary" id="buyGems1200">$9.99</button>
     </div>
 
     <div class="shopSectionTitle">Power-Ups</div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">💣 Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area — added to your Inventory</div></div>
-      <button class="btn small secondary" id="buyBombGem">40 💎</button>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bomb"></span>Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area — added to your Inventory</div></div>
+      <button class="btn small secondary" id="buyBombGem">40<span class="ico" data-icon="gem"></span></button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle">⚡ Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row & column — added to your Inventory</div></div>
-      <button class="btn small secondary" id="buyLaserGem">50 💎</button>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bolt"></span>Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row & column — added to your Inventory</div></div>
+      <button class="btn small secondary" id="buyLaserGem">50<span class="ico" data-icon="gem"></span></button>
     </div>
 
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeShopBtn">Close</button></div>
@@ -2005,7 +2020,7 @@
 
 <div class="overlay" id="themesOverlay">
   <div class="modalCard wide">
-    <h2>🎨 Themes</h2>
+    <h2>Themes</h2>
     <div id="skinList"></div>
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeThemesBtn">Close</button></div>
   </div>
@@ -2067,7 +2082,7 @@
 
 <div class="overlay" id="themeUnlockOverlay">
   <div class="modalCard">
-    <h2>🎁 New Theme Unlocked!</h2>
+    <h2>New theme unlocked</h2>
     <div class="skinSwatch themeUnlockSwatch" id="themeUnlockSwatch"></div>
     <div id="themeUnlockName" style="font-weight:800; font-size:var(--fs-md); margin:8px 0 12px 0;"></div>
     <div class="themeUnlockRewardRow" id="themeUnlockReward" style="display:none;"></div>
@@ -2080,6 +2095,69 @@
 
 <script>
 (function(){
+  // ---------- Icon set ----------
+  // Declared first: these are consts, so anything that calls iconMarkup()
+  // during start-up would hit the temporal dead zone if they lived further
+  // down the file. Several rank//countdown helpers do exactly that.
+  const ICON_SVGS = {
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    settings: '<path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/>',
+    gift: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M3 8h18v4H3z"/><path d="M12 8v12"/><path d="M12 8S10.5 4 8.5 4a2 2 0 0 0 0 4M12 8s1.5-4 3.5-4a2 2 0 0 1 0 4"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
+    trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4M9 20h6M10 17h4"/>',
+    palette: '<path d="M12 4a8 8 0 0 0 0 16c1.1 0 1.7-.8 1.7-1.6 0-1.2-1-1.6-.5-2.5.4-.8 1.3-.6 2.3-.6A4.5 4.5 0 0 0 20 10.8C20 6.9 16.4 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
+    cart: '<path d="M3 5h2l2.2 9.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.1L20 8H6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+    bomb: '<circle cx="11" cy="15.5" r="5.5"/><path d="M11 10V7.6"/><path d="M11 7.6c0-1.8 1.5-3.1 3.2-3.1 1.2 0 2 .8 2 1.7"/><path d="M18.2 4.3l1 .9M20 7.4l1.3-.5"/>',
+    bolt: '<path d="M13.5 3L6 13.5h5L10.5 21 18 10.5h-5z"/>',
+    undo: '<path d="M4 8h9a5 5 0 0 1 0 10H8"/><path d="M7.5 4.5L4 8l3.5 3.5"/>',
+    home: '<path d="M4 11l8-6.5 8 6.5"/><path d="M6.5 9.8V19a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.8"/><path d="M10 20v-5h4v5"/>',
+    gem: '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4L7.5 9 12 20M15 4l1.5 5L12 20"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    crown: '<path d="M4 8l3.5 3.5L12 5l4.5 6.5L20 8l-1.5 10h-13z"/><path d="M5.5 18h13"/>',
+    // Chrome icons. Emoji render as different artwork on every device and read
+    // as a placeholder for art nobody drew — so anything that is interface
+    // rather than game content gets a stroke icon from this set instead.
+    play: '<path d="M8 5.5v13l11-6.5z"/>',
+    shuffle: '<path d="M3 7.5h3.4c1.5 0 2.9.7 3.8 2l3.6 5c.9 1.3 2.3 2 3.8 2H21"/><path d="M3 16.5h3.4c1.5 0 2.9-.7 3.8-2M13.8 9.5c.9-1.3 2.3-2 3.8-2H21"/><path d="M18.5 5L21 7.5 18.5 10M18.5 14l2.5 2.5-2.5 2.5"/>',
+    video: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/>',
+    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M17.5 12v3.5M20.5 12v2.5"/>',
+    gamepad: '<rect x="2.5" y="7.5" width="19" height="10" rx="4"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.8" r="1"/><circle cx="18.4" cy="14" r="1"/>',
+    timer: '<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.5l2.2 1.6M9.5 3h5"/>',
+    zen: '<path d="M19.5 4C10.4 4 4.5 9 4.5 15.2A5.3 5.3 0 0 0 14 18.6C18.2 15 19.5 9.7 19.5 4z"/><path d="M4.5 20c3-4.6 6.7-7.6 11.3-9.5"/>',
+    calendar: '<rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/>',
+    puzzle: '<path d="M11 5.4a2.2 2.2 0 1 1 4.4 0V7H19a1 1 0 0 1 1 1v3.4h-1.6a2.2 2.2 0 1 0 0 4.4H20V19a1 1 0 0 1-1 1H8.4a1 1 0 0 1-1-1v-3.2H5.8a2.2 2.2 0 1 1 0-4.4h1.6V8a1 1 0 0 1 1-1H11z"/>',
+    swords: '<path d="M4 4h3l8.5 8.5-3 3L4 7z"/><path d="M20 4h-3l-8.5 8.5 3 3L20 7z"/><path d="M14.5 15.5l4 4M9.5 15.5l-4 4"/>',
+    volume: '<path d="M5 9.5h3L12 6v12l-4-3.5H5z"/><path d="M16 9.8a3.2 3.2 0 0 1 0 4.4M18.4 7.4a6.6 6.6 0 0 1 0 9.2"/>',
+    music: '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+    vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9.5v5M2 11v2M19.5 9.5v5M22 11v2"/>',
+    pulse: '<path d="M2.5 12.5h4l2.5-6 3.5 12 2.5-7 2 3h4.5"/>',
+    burst: '<path d="M12 3.5v3.5M12 17v3.5M3.5 12h3.5M17 12h3.5"/><path d="M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.6"/>',
+    sparkle: '<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+    accessibility: '<circle cx="12" cy="5" r="1.8"/><path d="M5.5 9h13M12 9v5M12 14l-3 6.5M12 14l3 6.5"/>',
+    warning: '<path d="M12 4.2L21 19.5H3z"/><path d="M12 10v4M12 16.6v.2"/>',
+    pointer: '<path d="M9 11.5V5.2a1.7 1.7 0 1 1 3.4 0v5.1"/><path d="M12.4 10.6V9.2a1.6 1.6 0 1 1 3.2 0v1.6"/><path d="M15.6 10.9V10a1.6 1.6 0 1 1 3.2 0v5.2a5.5 5.5 0 0 1-5.5 5.5h-1.6a5 5 0 0 1-3.9-1.9L5 14.6a1.7 1.7 0 0 1 2.7-2.1L9 14"/>',
+    clipboard: '<rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/>',
+    wrench: '<path d="M15.5 3.5a5.5 5.5 0 0 0-5 7.8L3.8 18a2 2 0 0 0 2.8 2.8l6.7-6.7a5.5 5.5 0 0 0 6.9-7.2l-3 3-2.6-2.6 3-3a5.5 5.5 0 0 0-2.1-.8z"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    lock: '<rect x="4.5" y="10" width="15" height="10.5" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/>',
+  };
+  function iconMarkup(name){
+    const body = ICON_SVGS[name];
+    if(!body) return '';
+    // The class carries its own sizing so iconMarkup() can be dropped into any
+    // container, not just a .ico span — an unclassed inline <svg> has no
+    // intrinsic size and would blow out to the default 300x150.
+    return `<svg class="icoSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  }
+  function renderIcons(root){
+    (root||document).querySelectorAll('[data-icon]').forEach(el=>{
+      const n = el.dataset.icon;
+      if(n && !el.firstElementChild) el.innerHTML = iconMarkup(n);
+    });
+  }
+
   // One-time full data wipe for this release — bump CURRENT_DATA_VERSION any
   // time everyone's saved progress should reset (e.g. shipping to new players).
   // Catches every "blastgrid_" key by prefix rather than listing them individually,
@@ -2159,25 +2237,25 @@
     {id:'sunset',  name:'Sunset',       cost:80,  swatch:['#ff5e3a','#ff9f1c','#e94560','#ff6b35']},
     {id:'ocean',   name:'Deep Ocean',   cost:80,  swatch:['#00b4d8','#06a77d','#0077b6','#03878f']},
     {id:'candy',   name:'Cotton Candy', cost:120, swatch:['#ff8fd6','#b98cff','#8fe0ff','#ffb98f']},
-    {id:'space',   name:'🚀 Deep Space', cost:150, swatch:['#c026d3','#0ea5e9','#7c3aed','#e11d48']},
-    {id:'cheese',  name:'🧀 Cheese Wheel', cost:150, swatch:['#f2a900','#ffcc33','#e08e00','#cc7a00']},
-    {id:'midnight',name:'🌙 Midnight',     cost:100, swatch:['#4361ee','#7209b7','#3a0ca3','#4cc9f0']},
-    {id:'inferno', name:'🔥 Inferno',      cost:130, swatch:['#ff0000','#ff7b00','#ffdd00','#c1121f']},
-    {id:'rainbow', name:'🌈 Rainbow Pop',  cost:180, swatch:['#ff006e','#fb5607','#ffbe0b','#8338ec']},
-    {id:'crimson', name:'🩸 Crimson Void', cost:260, swatch:['#ff3b3b','#8a0000','#ff0844','#4a0404']},
-    {id:'amethyst',name:'👑 Royal Amethyst',cost:290, swatch:['#e0aaff','#ffd60a','#c77dff','#9d4edd']},
-    {id:'toxic',   name:'☠️ Toxic Neon',    cost:320, swatch:['#ccff00','#39ff14','#111a05','#00ff87']},
-    {id:'thunderstorm', name:'⚡ Thunderstorm', cost:380, swatch:['#8fa8ff','#6b7a99','#e8f0ff','#fff9c4']},
-    {id:'spooky',        name:'🎃 Spooky Night', cost:380, swatch:['#ff8c3a','#8a4fd9','#f2e9d8','#7cff6b']},
-    {id:'fireworks',     name:'🎆 Fireworks Festival', cost:420, swatch:['#ff5c5c','#ffd75c','#5cf2ff','#ff5cf2']},
-    {id:'singularity',   name:'🌌 Singularity', cost:750, swatch:['#ffffff','#5cf2ff','#ff5cf2','#a855ff']},
-    {id:'rankSilver',    name:'🥈 Silver Streak',   unlockRank:'Silver',    swatch:['#e8edf2','#b0c4de','#8fa8c4','#d4dce4']},
-    {id:'rankGold',      name:'🥇 Golden Hour',     unlockRank:'Gold',      swatch:['#ffd700','#ffb347','#daa520','#ffcc66']},
-    {id:'rankPlatinum',  name:'💎 Platinum Prism',  unlockRank:'Platinum',  swatch:['#7ee8e0','#a0f0ea','#40c9c0','#c0f5f0']},
-    {id:'rankDiamond',   name:'👑 Diamond Royale',  unlockRank:'Diamond',   swatch:['#c58cff','#9d4edd','#e0aaff','#b298dc']},
-    {id:'rankLegendary', name:'🌟 Legendary Aurora',unlockRank:'Legendary', swatch:['#ff5088','#ffd700','#3fc9e8','#c58cff']},
-    {id:'rankSupernova', name:'💥 Supernova',        unlockRank:'Supernova', swatch:['#ffffff','#ffd700','#ff5088','#3fc9e8']},
-    {id:'secretNice',    name:'🍃 High Score',       unlockScore:420670690,      swatch:['#2ee66b','#ffd700','#7de88a','#ffcc33']},
+    {id:'space',   name:'Deep Space', cost:150, swatch:['#c026d3','#0ea5e9','#7c3aed','#e11d48']},
+    {id:'cheese',  name:'Cheese Wheel', cost:150, swatch:['#f2a900','#ffcc33','#e08e00','#cc7a00']},
+    {id:'midnight',name:'Midnight',     cost:100, swatch:['#4361ee','#7209b7','#3a0ca3','#4cc9f0']},
+    {id:'inferno', name:'Inferno',      cost:130, swatch:['#ff0000','#ff7b00','#ffdd00','#c1121f']},
+    {id:'rainbow', name:'Rainbow Pop',  cost:180, swatch:['#ff006e','#fb5607','#ffbe0b','#8338ec']},
+    {id:'crimson', name:'Crimson Void', cost:260, swatch:['#ff3b3b','#8a0000','#ff0844','#4a0404']},
+    {id:'amethyst',name:'Royal Amethyst',cost:290, swatch:['#e0aaff','#ffd60a','#c77dff','#9d4edd']},
+    {id:'toxic',   name:'Toxic Neon',    cost:320, swatch:['#ccff00','#39ff14','#111a05','#00ff87']},
+    {id:'thunderstorm', name:'Thunderstorm', cost:380, swatch:['#8fa8ff','#6b7a99','#e8f0ff','#fff9c4']},
+    {id:'spooky',        name:'Spooky Night', cost:380, swatch:['#ff8c3a','#8a4fd9','#f2e9d8','#7cff6b']},
+    {id:'fireworks',     name:'Fireworks Festival', cost:420, swatch:['#ff5c5c','#ffd75c','#5cf2ff','#ff5cf2']},
+    {id:'singularity',   name:'Singularity', cost:750, swatch:['#ffffff','#5cf2ff','#ff5cf2','#a855ff']},
+    {id:'rankSilver',    name:'Silver Streak',   unlockRank:'Silver',    swatch:['#e8edf2','#b0c4de','#8fa8c4','#d4dce4']},
+    {id:'rankGold',      name:'Golden Hour',     unlockRank:'Gold',      swatch:['#ffd700','#ffb347','#daa520','#ffcc66']},
+    {id:'rankPlatinum',  name:'Platinum Prism',  unlockRank:'Platinum',  swatch:['#7ee8e0','#a0f0ea','#40c9c0','#c0f5f0']},
+    {id:'rankDiamond',   name:'Diamond Royale',  unlockRank:'Diamond',   swatch:['#c58cff','#9d4edd','#e0aaff','#b298dc']},
+    {id:'rankLegendary', name:'Legendary Aurora',unlockRank:'Legendary', swatch:['#ff5088','#ffd700','#3fc9e8','#c58cff']},
+    {id:'rankSupernova', name:'Supernova',        unlockRank:'Supernova', swatch:['#ffffff','#ffd700','#ff5088','#3fc9e8']},
+    {id:'secretNice',    name:'High Score',       unlockScore:420670690,      swatch:['#2ee66b','#ffd700','#7de88a','#ffcc33']},
   ];
   const SKIN_COLOR_MAPS = {
     classic:{ blk0:'#ff1f7a', blk1:'#ffa900', blk2:'#00c3f0', blk3:'#a933ff', blk4:'#ff6a00', blk5:'#00e676' },
@@ -2259,8 +2337,8 @@
   function updateCountdownTexts(){
     const d = document.getElementById('dailyResetCountdown');
     const w = document.getElementById('weeklyResetCountdown');
-    if(d) d.textContent = '⏱ ' + formatCountdown(msUntilNextMidnight());
-    if(w) w.textContent = '⏱ ' + formatCountdown(msUntilNextMonday());
+    if(d) d.innerHTML = iconMarkup('timer') + '<span>' + formatCountdown(msUntilNextMidnight()) + '</span>';
+    if(w) w.innerHTML = iconMarkup('timer') + '<span>' + formatCountdown(msUntilNextMonday()) + '</span>';
   }
   function shuffle(arr){
     const a = arr.slice();
@@ -2636,18 +2714,22 @@
   let lifetimeStats = { gamesPlayed:0, piecesPlaced:0, linesCleared:0, specialUsed:0, maxCombo:0 };
   try{ lifetimeStats = Object.assign(lifetimeStats, JSON.parse(localStorage.getItem('blastgrid_lifetime_stats')||'{}')); }catch(e){}
 
+  // `sym` is the ICON_SVGS name drawn anywhere the tier appears in the UI;
+  // `icon` is the emoji, kept solely for the rank-up emoji rain, which is a
+  // celebration rather than chrome. Tier identity is carried by colour (see
+  // the .rank-* classes), so the symbols only need to group the tiers.
   const RANK_TIERS = [
-    {min:0,      name:'Bronze',    cls:'rank-bronze',    icon:'🥉'},
-    {min:40000,  name:'Silver',    cls:'rank-silver',    icon:'🥈'},
-    {min:85000,  name:'Gold',      cls:'rank-gold',      icon:'🥇'},
-    {min:245000, name:'Platinum',  cls:'rank-platinum',  icon:'💎'},
-    {min:475000, name:'Diamond',   cls:'rank-diamond',   icon:'👑'},
-    {min:1000000,name:'Legendary', cls:'rank-legendary', icon:'🌟'},
+    {min:0,      name:'Bronze',    cls:'rank-bronze',    sym:'trophy', icon:'🥉'},
+    {min:40000,  name:'Silver',    cls:'rank-silver',    sym:'trophy', icon:'🥈'},
+    {min:85000,  name:'Gold',      cls:'rank-gold',      sym:'trophy', icon:'🥇'},
+    {min:245000, name:'Platinum',  cls:'rank-platinum',  sym:'gem',    icon:'💎'},
+    {min:475000, name:'Diamond',   cls:'rank-diamond',   sym:'gem',    icon:'👑'},
+    {min:1000000,name:'Legendary', cls:'rank-legendary', sym:'crown',  icon:'🌟'},
     // The ~0.001% tier — purely score-gated. Rescaled ~2.8x alongside every
     // other tier after the solvability fix roughly 2.5x'd average scores —
     // verified via a fresh player-journey simulation with the new piece-
     // generation logic, not just a flat multiply of the old thresholds.
-    {min:2500000,name:'Supernova', cls:'rank-supernova', icon:'💥'},
+    {min:2500000,name:'Supernova', cls:'rank-supernova', sym:'burst',  icon:'💥'},
   ];
   function meetsRankTier(tier, score){
     if(score < tier.min) return false;
@@ -2698,7 +2780,7 @@
     if(!badge) return;
     const rank = getRankInfo(rankBest);
     badge.className = 'rankBadge ' + rank.cls;
-    badge.textContent = `${rank.icon} ${rank.name}`;
+    badge.innerHTML = `${iconMarkup(rank.sym)}<span>${rank.name}</span>`;
 
     const bar = document.getElementById('rankProgressBar');
     const fill = document.getElementById('rankProgressFill');
@@ -2810,7 +2892,7 @@
     const available = undoSnapshot !== null && !gameOver;
     const costsGems = undoUsedThisGame;
     btn.disabled = !available || (costsGems && gems < UNDO_GEM_COST);
-    label.textContent = costsGems ? `${UNDO_GEM_COST}💎` : 'Undo';
+    label.innerHTML = costsGems ? `${UNDO_GEM_COST}${iconMarkup('gem')}` : 'Undo';
   }
 
   function performUndo(){
@@ -2882,59 +2964,6 @@
   // Inline SVG rather than emoji: emoji render as entirely different artwork
   // on Samsung vs Pixel vs iPhone, so the UI looked different on every device.
   // These inherit currentColor, so they adapt to every theme automatically.
-  const ICON_SVGS = {
-    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
-    settings: '<path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/>',
-    gift: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M3 8h18v4H3z"/><path d="M12 8v12"/><path d="M12 8S10.5 4 8.5 4a2 2 0 0 0 0 4M12 8s1.5-4 3.5-4a2 2 0 0 1 0 4"/>',
-    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
-    trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4M9 20h6M10 17h4"/>',
-    palette: '<path d="M12 4a8 8 0 0 0 0 16c1.1 0 1.7-.8 1.7-1.6 0-1.2-1-1.6-.5-2.5.4-.8 1.3-.6 2.3-.6A4.5 4.5 0 0 0 20 10.8C20 6.9 16.4 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
-    cart: '<path d="M3 5h2l2.2 9.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.1L20 8H6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
-    bomb: '<circle cx="11" cy="15.5" r="5.5"/><path d="M11 10V7.6"/><path d="M11 7.6c0-1.8 1.5-3.1 3.2-3.1 1.2 0 2 .8 2 1.7"/><path d="M18.2 4.3l1 .9M20 7.4l1.3-.5"/>',
-    bolt: '<path d="M13.5 3L6 13.5h5L10.5 21 18 10.5h-5z"/>',
-    undo: '<path d="M4 8h9a5 5 0 0 1 0 10H8"/><path d="M7.5 4.5L4 8l3.5 3.5"/>',
-    home: '<path d="M4 11l8-6.5 8 6.5"/><path d="M6.5 9.8V19a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.8"/><path d="M10 20v-5h4v5"/>',
-    gem: '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4L7.5 9 12 20M15 4l1.5 5L12 20"/>',
-    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
-    close: '<path d="M6 6l12 12M18 6L6 18"/>',
-    crown: '<path d="M4 8l3.5 3.5L12 5l4.5 6.5L20 8l-1.5 10h-13z"/><path d="M5.5 18h13"/>',
-    // Chrome icons. Emoji render as different artwork on every device and read
-    // as a placeholder for art nobody drew — so anything that is interface
-    // rather than game content gets a stroke icon from this set instead.
-    play: '<path d="M8 5.5v13l11-6.5z"/>',
-    shuffle: '<path d="M3 7.5h3.4c1.5 0 2.9.7 3.8 2l3.6 5c.9 1.3 2.3 2 3.8 2H21"/><path d="M3 16.5h3.4c1.5 0 2.9-.7 3.8-2M13.8 9.5c.9-1.3 2.3-2 3.8-2H21"/><path d="M18.5 5L21 7.5 18.5 10M18.5 14l2.5 2.5-2.5 2.5"/>',
-    video: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/>',
-    refresh: '<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/>',
-    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M17.5 12v3.5M20.5 12v2.5"/>',
-    gamepad: '<rect x="2.5" y="7.5" width="19" height="10" rx="4"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.8" r="1"/><circle cx="18.4" cy="14" r="1"/>',
-    timer: '<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.5l2.2 1.6M9.5 3h5"/>',
-    zen: '<path d="M19.5 4C10.4 4 4.5 9 4.5 15.2A5.3 5.3 0 0 0 14 18.6C18.2 15 19.5 9.7 19.5 4z"/><path d="M4.5 20c3-4.6 6.7-7.6 11.3-9.5"/>',
-    calendar: '<rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/>',
-    puzzle: '<path d="M11 5.4a2.2 2.2 0 1 1 4.4 0V7H19a1 1 0 0 1 1 1v3.4h-1.6a2.2 2.2 0 1 0 0 4.4H20V19a1 1 0 0 1-1 1H8.4a1 1 0 0 1-1-1v-3.2H5.8a2.2 2.2 0 1 1 0-4.4h1.6V8a1 1 0 0 1 1-1H11z"/>',
-    swords: '<path d="M4 4h3l8.5 8.5-3 3L4 7z"/><path d="M20 4h-3l-8.5 8.5 3 3L20 7z"/><path d="M14.5 15.5l4 4M9.5 15.5l-4 4"/>',
-    volume: '<path d="M5 9.5h3L12 6v12l-4-3.5H5z"/><path d="M16 9.8a3.2 3.2 0 0 1 0 4.4M18.4 7.4a6.6 6.6 0 0 1 0 9.2"/>',
-    music: '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-    vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9.5v5M2 11v2M19.5 9.5v5M22 11v2"/>',
-    pulse: '<path d="M2.5 12.5h4l2.5-6 3.5 12 2.5-7 2 3h4.5"/>',
-    burst: '<path d="M12 3.5v3.5M12 17v3.5M3.5 12h3.5M17 12h3.5"/><path d="M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.6"/>',
-    sparkle: '<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
-    accessibility: '<circle cx="12" cy="5" r="1.8"/><path d="M5.5 9h13M12 9v5M12 14l-3 6.5M12 14l3 6.5"/>',
-    warning: '<path d="M12 4.2L21 19.5H3z"/><path d="M12 10v4M12 16.6v.2"/>',
-    pointer: '<path d="M9 11.5V5.2a1.7 1.7 0 1 1 3.4 0v5.1"/><path d="M12.4 10.6V9.2a1.6 1.6 0 1 1 3.2 0v1.6"/><path d="M15.6 10.9V10a1.6 1.6 0 1 1 3.2 0v5.2a5.5 5.5 0 0 1-5.5 5.5h-1.6a5 5 0 0 1-3.9-1.9L5 14.6a1.7 1.7 0 0 1 2.7-2.1L9 14"/>',
-    clipboard: '<rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/>',
-    wrench: '<path d="M15.5 3.5a5.5 5.5 0 0 0-5 7.8L3.8 18a2 2 0 0 0 2.8 2.8l6.7-6.7a5.5 5.5 0 0 0 6.9-7.2l-3 3-2.6-2.6 3-3a5.5 5.5 0 0 0-2.1-.8z"/>',
-  };
-  function iconMarkup(name){
-    const body = ICON_SVGS[name];
-    if(!body) return '';
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
-  }
-  function renderIcons(root){
-    (root||document).querySelectorAll('[data-icon]').forEach(el=>{
-      const n = el.dataset.icon;
-      if(n && !el.firstElementChild) el.innerHTML = iconMarkup(n);
-    });
-  }
 
   // ---------- Board skin application ----------
   // ---------- Supernova: WebGL shader background + outward-exploding particle
@@ -3705,9 +3734,9 @@
   }
   function rewardLinesHtml(reward){
     let html = '';
-    if(reward.bomb) html += `<div>💣×${reward.bomb}</div>`;
-    if(reward.laser) html += `<div>⚡×${reward.laser}</div>`;
-    if(reward.gems) html += `<div>💎${reward.gems}</div>`;
+    if(reward.bomb) html += `<div>${iconMarkup('bomb')}×${reward.bomb}</div>`;
+    if(reward.laser) html += `<div>${iconMarkup('bolt')}×${reward.laser}</div>`;
+    if(reward.gems) html += `<div>${iconMarkup('gem')}${reward.gems}</div>`;
     return html;
   }
   function updateLoginBadge(){
@@ -3719,7 +3748,7 @@
     const pending = computePendingLogin();
     const startDay = pending ? pending.day : (state.streak+1);
     document.getElementById('loginCurrentStreak').textContent = state.streak>0
-      ? `🔥 Current streak: ${state.streak} day${state.streak>1?'s':''}`
+      ? `Current streak: ${state.streak} day${state.streak>1?'s':''}`
       : `Start your streak today!`;
     const row = document.getElementById('loginDayCardsRow');
     row.innerHTML = '';
@@ -3759,9 +3788,9 @@
 
   function rewardText(reward){
     const parts = [];
-    if(reward.bomb) parts.push(`💣×${reward.bomb}`);
-    if(reward.laser) parts.push(`⚡×${reward.laser}`);
-    if(reward.gems) parts.push(`💎×${reward.gems}`);
+    if(reward.bomb) parts.push(`Bomb ×${reward.bomb}`);
+    if(reward.laser) parts.push(`Laser ×${reward.laser}`);
+    if(reward.gems) parts.push(`${reward.gems} gems`);
     return parts.join('  ');
   }
   function grantReward(reward){
@@ -3942,12 +3971,12 @@
     list.innerHTML = scoreHistory.map((h,i)=>{
       const rankInfo = getRankInfo(h.score);
       return `<div class="historyRow${i===0?' isBest':''}">
-        <div class="historyRank">${i===0?'👑':'#'+(i+1)}</div>
+        <div class="historyRank">${i===0?iconMarkup('crown'):'#'+(i+1)}</div>
         <div class="historyMain">
           <div class="historyScore">${h.score.toLocaleString()}</div>
           <div class="historyMeta">${MODE_LABELS[h.mode]||h.mode} · ${h.lines} lines · x${h.combo} combo · ${formatHistoryDate(h.date)}</div>
         </div>
-        <div class="historyRank">${rankInfo.icon}</div>
+        <div class="historyRank">${iconMarkup(rankInfo.sym)}</div>
       </div>`;
     }).join('');
   }
@@ -4057,7 +4086,7 @@
   function spawnMilestoneCelebration(value){
     const banner = document.createElement('div');
     banner.className = 'milestoneBanner';
-    banner.textContent = `🎉 ${value.toLocaleString()} POINTS! 🎉`;
+    banner.textContent = `${value.toLocaleString()} points`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2100);
@@ -4098,10 +4127,10 @@
     return 7; // 5+
   }
   function multiClearLabel(n){
-    if(n===2) return '💥 DOUBLE CLEAR!';
-    if(n===3) return '🎆 TRIPLE CLEAR!';
-    if(n===4) return '🎇 QUAD CLEAR!';
-    return '🌟 MEGA CLEAR!!';
+    if(n===2) return 'Double clear';
+    if(n===3) return 'Triple clear';
+    if(n===4) return 'Quad clear';
+    return 'Mega clear';
   }
   function spawnMultiClearCelebration(n, scoreGained){
     const banner = document.createElement('div');
@@ -4161,7 +4190,7 @@
 
     const banner = document.createElement('div');
     banner.className = 'perfectClearBanner';
-    banner.innerHTML = `<div class="pcTitle">🌟 PERFECT CLEAR! 🌟</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
+    banner.innerHTML = `<div class="pcTitle">Perfect clear</div><div class="pcBonus">+${bonus.toLocaleString()} BONUS</div>`;
     document.body.appendChild(banner);
     requestAnimationFrame(()=>banner.classList.add('show'));
     setTimeout(()=>banner.remove(), 2600);
@@ -4320,9 +4349,9 @@
       let btnHtml;
       if(selected) btnHtml = `<button class="btn small secondary" disabled>✓ Selected</button>`;
       else if(owned) btnHtml = `<button class="btn small" data-skin="${skin.id}" data-action="select">Select</button>`;
-      else if(isRankSkin) btnHtml = `<button class="btn small secondary" disabled>🔒 ${skin.unlockRank}</button>`;
+      else if(isRankSkin) btnHtml = `<button class="btn small secondary" disabled>${iconMarkup('lock')}${skin.unlockRank}</button>`;
       else btnHtml = `<button class="btn small secondary" data-skin="${skin.id}" data-action="buy" ${gems<skin.cost?'disabled':''}>${skin.cost}💎</button>`;
-      card.innerHTML = `<button class="themeCardTryBtn" data-try="${skin.id}">👁</button><div class="themeCardSwatch">${swatchHtml}</div><div class="themeCardName">${skin.name}</div>${btnHtml}`;
+      card.innerHTML = `<button class="themeCardTryBtn" data-try="${skin.id}">${iconMarkup('eye')}</button><div class="themeCardSwatch">${swatchHtml}</div><div class="themeCardName">${skin.name}</div>${btnHtml}`;
       return card;
     }
 
@@ -4338,10 +4367,10 @@
       skinList.appendChild(grid);
     }
 
-    addSection('🎨 Purchasable', SKINS.filter(s=>!s.unlockRank && !s.unlockScore));
-    addSection('🏆 Rank Rewards', SKINS.filter(s=>!!s.unlockRank));
+    addSection('Purchasable', SKINS.filter(s=>!s.unlockRank && !s.unlockScore));
+    addSection('Rank rewards', SKINS.filter(s=>!!s.unlockRank));
     // Truly hidden until earned — found, not listed.
-    addSection('✨ Secret', SKINS.filter(s=>!!s.unlockScore && SECRET_THEME_ENABLED && best>=s.unlockScore));
+    addSection('Secret', SKINS.filter(s=>!!s.unlockScore && SECRET_THEME_ENABLED && best>=s.unlockScore));
 
     skinList.querySelectorAll('button[data-skin]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -4427,8 +4456,8 @@
   function renderRankDetails(){
     const rank = getRankInfo(rankBest);
     document.getElementById('rankDetailsBadge').className = 'rankDetailsBadge ' + rank.cls;
-    document.getElementById('rankDetailsBadge').textContent = rank.icon;
-    document.getElementById('rankDetailsScore').textContent = `${rank.icon} ${rank.name} — ${rankBest.toLocaleString()} pts`;
+    document.getElementById('rankDetailsBadge').innerHTML = iconMarkup(rank.sym);
+    document.getElementById('rankDetailsScore').textContent = `${rank.name} — ${rankBest.toLocaleString()} pts`;
     const pct = scoreToPercentile(rankBest);
     // Percentile means "beats X%", so a HIGHER number is better — flip it to
     // the more intuitive "top X%" framing (top 1% beats the 99th percentile).
@@ -4449,7 +4478,7 @@
       else if(achieved) statusHtml = `<span class="rankRungStatus achieved">✓ Reached</span>`;
       else statusHtml = `<span class="rankRungStatus locked">${(tier.min-rankBest).toLocaleString()} to go</span>`;
       row.innerHTML = `
-        <div class="rankRungIcon">${tier.icon}</div>
+        <div class="rankRungIcon">${iconMarkup(tier.sym)}</div>
         <div class="rankRungInfo">
           <div class="rankRungName">${tier.name}</div>
           <div class="rankRungPoints">${pointsLabel}</div>
@@ -4462,8 +4491,8 @@
   function renderRankGraph(){
     const rank = getRankInfo(rankBest);
     document.getElementById('rankGraphBadge').className = 'rankDetailsBadge ' + rank.cls;
-    document.getElementById('rankGraphBadge').textContent = rank.icon;
-    document.getElementById('rankGraphScore').textContent = `${rank.icon} ${rank.name} — ${rankBest.toLocaleString()} pts`;
+    document.getElementById('rankGraphBadge').innerHTML = iconMarkup(rank.sym);
+    document.getElementById('rankGraphScore').textContent = `${rank.name} — ${rankBest.toLocaleString()} pts`;
     const pct = scoreToPercentile(rankBest);
     const topPct = Math.max(0.1, 100 - pct);
     document.getElementById('rankGraphPct').textContent = `Top ${topPct < 1 ? topPct.toFixed(1) : topPct.toFixed(0)}% of scores (estimated)`;
@@ -4489,7 +4518,7 @@
       col.innerHTML = `
         <div class="rankBarValue">${valueLabel}</div>
         <div class="rankBar" style="height:${barHeightPercent(tier.min)}%"></div>
-        <div class="rankBarIcon">${tier.icon}</div>
+        <div class="rankBarIcon">${iconMarkup(tier.sym)}</div>
         <div class="rankBarLabel">${tier.name}</div>`;
       chart.appendChild(col);
     });
@@ -6206,9 +6235,9 @@
       const cardEl = document.querySelector('#rankUpOverlay .rankUpCard');
 
       oldBadgeEl.className = 'rankUpBadgeOld ' + oldRank.cls;
-      oldBadgeEl.textContent = oldRank.icon;
+      oldBadgeEl.innerHTML = iconMarkup(oldRank.sym);
       newBadgeEl.className = 'rankUpBadgeBig ' + newRank.cls;
-      newBadgeEl.textContent = newRank.icon;
+      newBadgeEl.innerHTML = iconMarkup(newRank.sym);
       document.getElementById('rankUpNewRankName').textContent = `You're now ${newRank.name}!`;
 
       // Full-screen takeover in the new rank's own color, with that rank's icon
