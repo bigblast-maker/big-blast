@@ -40,11 +40,15 @@
   button{ font-family:inherit; border:none; cursor:pointer; }
   .btn{
     --pressY:3px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
     background:var(--accent); color:#1a1208; font-weight:700;
     padding:14px 30px; border-radius:var(--r-md); font-size:var(--fs-md); letter-spacing:0.2px;
     box-shadow:0 3px 0 var(--accent-dim);
     transition:transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
   }
+  /* Icons inside buttons ride slightly under the cap height so they optically
+     centre against uppercase labels rather than sitting a hair high. */
+  .btn .ico{ font-size:1.15em; margin-top:-0.05em; flex-shrink:0; }
   .btn:active{ box-shadow:0 1px 0 var(--accent-dim); transform:translateY(2px); }
   .btn.pressShake{ animation:btnPressShake 0.32s ease; }
   @keyframes btnPressShake{
@@ -169,12 +173,22 @@
     font-size:var(--fs-base); font-weight:700; color:var(--text);
   }
   .gemPillMenu .ico{ color:var(--cyan); font-size:var(--fs-md); }
+  /* Stacked lockup rather than one inline string. "BIG" is tracked out so it
+     sits flush to the width of "BLAST" beneath it — two words set as a single
+     shape reads as a mark somebody drew, where one line of bold system font
+     reads as an <h1> nobody thought about. */
   #menuScreen h1{
-    font-size:var(--fs-4xl); margin:0 0 6px 0; font-weight:800; letter-spacing:-1.5px;
-    color:var(--text);
+    display:flex; flex-direction:column; align-items:center;
+    margin:0 0 26px 0; line-height:0.84; color:var(--text);
   }
+  #menuScreen h1 .wordTop{
+    font-size:var(--fs-lg); font-weight:700; color:var(--muted);
+    /* The trailing letter-space on the final glyph would shove the word off
+       centre; the matching indent pushes it back. */
+    letter-spacing:0.60em; text-indent:0.60em;
+  }
+  #menuScreen h1 .wordBot{ font-size:var(--fs-5xl); font-weight:800; letter-spacing:-0.035em; }
   #menuScreen h1 .accentWord{ color:var(--accent); }
-  #menuScreen .tagline{ color:var(--muted); font-size:var(--fs-base); margin-bottom:28px; letter-spacing:0.2px; }
   .highScoreCard{
     background:var(--panel); border:1px solid var(--line);
     border-radius:var(--r-lg); padding:18px 20px 6px 20px; margin-bottom:28px;
@@ -373,8 +387,8 @@
   }
   .rankRung.achieved{ background:rgba(255,255,255,0.08); }
   .rankRung.current{
-    background:linear-gradient(90deg, rgba(255,207,92,0.2), rgba(255,47,135,0.1));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
   .rankRungIcon{ font-size:var(--fs-xl); width:30px; text-align:center; flex-shrink:0; }
   .rankRungInfo{ flex:1; text-align:left; min-width:0; }
@@ -435,13 +449,18 @@
     box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
     transition:transform 0.12s ease;
   }
-  .modeCard span{ font-size:var(--fs-xs); font-weight:800; color:var(--text); letter-spacing:0.3px; }
+  .modeCard .ico{ font-size:var(--fs-xl); color:var(--muted); }
+  .modeCard span:not(.ico){ font-size:var(--fs-xs); font-weight:800; color:var(--text); letter-spacing:0.3px; }
+  /* Solid tint + a single accent border. The old rule used a gold-to-pink
+     gradient, which is the exact decorative-gradient look the palette was
+     rebuilt to avoid. */
   .modeCard.active{
-    background:linear-gradient(160deg, rgba(255,207,92,0.28), rgba(255,47,135,0.16));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
     transform:translateY(-2px);
   }
-  .modeCard.active span{ color:var(--gold); }
+  .modeCard.active .ico{ color:var(--accent); }
+  .modeCard.active span:not(.ico){ color:var(--accent); }
   .modeCard.pressShake{ animation:modeCardPressShake 0.32s ease; }
   @keyframes modeCardPressShake{
     0%{ transform:scale(1) translateX(0); }
@@ -480,8 +499,8 @@
     background:rgba(255,255,255,0.04); transition:background 0.3s ease, box-shadow 0.3s ease;
   }
   .duelPlayerScore.active{
-    background:linear-gradient(160deg, rgba(255,207,92,0.22), rgba(255,47,135,0.12));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.14);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
   .duelPlayerLabel{ font-size:var(--fs-xs); font-weight:800; color:var(--muted); letter-spacing:0.5px; text-transform:uppercase; }
   .duelPlayerScore.active .duelPlayerLabel{ color:var(--gold); }
@@ -509,8 +528,8 @@
     background:rgba(255,255,255,0.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08);
   }
   .duelResultCol.winner{
-    background:linear-gradient(160deg, rgba(255,207,92,0.25), rgba(255,47,135,0.12));
-    box-shadow:inset 0 0 0 2px var(--gold);
+    background:rgba(240,145,58,0.16);
+    box-shadow:inset 0 0 0 2px var(--accent);
   }
   .duelResultLabel{ font-size:var(--fs-sm); font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
   .duelResultScore{ font-size:var(--fs-2xl); font-weight:900; color:var(--gold); margin-top:4px; }
@@ -1035,7 +1054,11 @@
   .modalCard .modalButtons{ display:flex; flex-direction:column; gap:10px; }
   .modalCard.wide{ max-width:400px; }
 
-  .settingsRow{ display:flex; align-items:center; justify-content:space-between; padding:12px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:var(--fs-md); }
+  .settingsRow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:var(--fs-md); }
+  /* Label + icon share one flex line so every row's text starts on the same
+     x, which is what stops a settings list from looking ragged. */
+  .settingsRow > span:first-child{ display:flex; align-items:center; gap:11px; min-width:0; }
+  .settingsRow .ico{ color:var(--muted); font-size:1.05em; flex-shrink:0; }
   .settingsRow:last-of-type{ border-bottom:none; }
   .switch{ position:relative; width:46px; height:26px; flex-shrink:0; }
   .switch input{ opacity:0; width:0; height:0; }
@@ -1587,8 +1610,7 @@
         <span id="menuGemCount">0</span>
       </div>
     </div>
-    <h1>BIG <span class="accentWord">BLAST</span></h1>
-    <div class="tagline">Place. Clear. Chain your combo.</div>
+    <h1><span class="wordTop">BIG</span><span class="wordBot accentWord">BLAST</span></h1>
     <div class="highScoreCard">
       <div class="label">High Score</div>
       <div class="value" id="menuHighScore">0</div>
@@ -1607,8 +1629,8 @@
       </button>
     </div>
     <div class="menuButtons">
-      <button class="btn" id="playBtn">▶ PLAY</button>
-      <button class="btn secondary" id="newGameFromMenuBtn" style="display:none;">🔀 Play a Different Mode</button>
+      <button class="btn" id="playBtn"><span class="ico" data-icon="play"></span>Play</button>
+      <button class="btn secondary" id="newGameFromMenuBtn" style="display:none;"><span class="ico" data-icon="shuffle"></span>Different mode</button>
     </div>
     <div class="menuBottomNav">
       <button class="iconBtnLabeled" id="moreBtnMenu">
@@ -1676,23 +1698,23 @@
   <div class="modalCard">
     <h2>Settings</h2>
 
-    <div class="challengeSectionTitle"><span>🔊 Audio &amp; Haptics</span></div>
-    <div class="settingsRow"><span>🔊 Sound Effects</span><label class="switch"><input type="checkbox" id="soundToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>🎵 Background Music</span><label class="switch"><input type="checkbox" id="musicToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>📳 Haptics</span><label class="switch"><input type="checkbox" id="hapticsToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Audio &amp; haptics</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="volume"></span>Sound effects</span><label class="switch"><input type="checkbox" id="soundToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="music"></span>Background music</span><label class="switch"><input type="checkbox" id="musicToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="vibrate"></span>Haptics</span><label class="switch"><input type="checkbox" id="hapticsToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>✨ Visual Effects</span></div>
-    <div class="settingsRow"><span>😬 Board Tension Effect</span><label class="switch"><input type="checkbox" id="tensionToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>📳 Screen Shake</span><label class="switch"><input type="checkbox" id="shakeToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>💥 Bomb Particles</span><label class="switch"><input type="checkbox" id="particlesBombToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>✨ Line Clear Particles</span><label class="switch"><input type="checkbox" id="particlesLineToggle"><span class="slider"></span></label></div>
-    <div class="settingsRow"><span>⚡ Lightning Particles</span><label class="switch"><input type="checkbox" id="particlesLightningToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Visual effects</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="pulse"></span>Board tension</span><label class="switch"><input type="checkbox" id="tensionToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="vibrate"></span>Screen shake</span><label class="switch"><input type="checkbox" id="shakeToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="burst"></span>Bomb particles</span><label class="switch"><input type="checkbox" id="particlesBombToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="sparkle"></span>Line clear particles</span><label class="switch"><input type="checkbox" id="particlesLineToggle"><span class="slider"></span></label></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="bolt"></span>Lightning particles</span><label class="switch"><input type="checkbox" id="particlesLightningToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>♿ Accessibility</span></div>
-    <div class="settingsRow"><span>🎨 Colorblind Mode</span><label class="switch"><input type="checkbox" id="colorblindToggle"><span class="slider"></span></label></div>
+    <div class="challengeSectionTitle"><span>Accessibility</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="palette"></span>Colorblind mode</span><label class="switch"><input type="checkbox" id="colorblindToggle"><span class="slider"></span></label></div>
 
-    <div class="challengeSectionTitle"><span>⚠️ Danger Zone</span></div>
-    <div class="settingsRow"><span>Reset High Score</span><button class="btn small secondary" id="resetHighScoreBtn">Reset</button></div>
+    <div class="challengeSectionTitle"><span>Danger zone</span></div>
+    <div class="settingsRow"><span><span class="ico" data-icon="warning"></span>Reset high score</span><button class="btn small secondary" id="resetHighScoreBtn">Reset</button></div>
 
     <div class="modalButtons" style="margin-top:16px;"><button class="btn secondary" id="closeSettingsBtn">Close</button></div>
   </div>
@@ -1818,24 +1840,24 @@
 
 <div class="overlay" id="chooseModeOverlay">
   <div class="modalCard wide">
-    <h2>Choose Mode</h2>
-    <div class="challengeSectionTitle"><span>Game Modes</span></div>
+    <h2>Choose mode</h2>
+    <div class="challengeSectionTitle"><span>Game modes</span></div>
     <div class="modeSelector" id="modeSelector">
-      <button class="modeCard active" data-mode="classic">🎮<span>Classic</span></button>
-      <button class="modeCard" data-mode="timeattack">⏱<span>Time Attack</span></button>
-      <button class="modeCard" data-mode="zen">🧘<span>Zen</span></button>
-      <button class="modeCard" data-mode="daily">📅<span>Daily</span></button>
-      <button class="modeCard" data-mode="pure">🧩<span>Pure</span></button>
-      <button class="modeCard" data-mode="duel">⚔️<span>Duel</span></button>
+      <button class="modeCard active" data-mode="classic"><span class="ico" data-icon="gamepad"></span><span>Classic</span></button>
+      <button class="modeCard" data-mode="timeattack"><span class="ico" data-icon="timer"></span><span>Time Attack</span></button>
+      <button class="modeCard" data-mode="zen"><span class="ico" data-icon="zen"></span><span>Zen</span></button>
+      <button class="modeCard" data-mode="daily"><span class="ico" data-icon="calendar"></span><span>Daily</span></button>
+      <button class="modeCard" data-mode="pure"><span class="ico" data-icon="puzzle"></span><span>Pure</span></button>
+      <button class="modeCard" data-mode="duel"><span class="ico" data-icon="swords"></span><span>Duel</span></button>
     </div>
-    <div class="challengeSectionTitle"><span>Friend Challenges</span></div>
+    <div class="challengeSectionTitle"><span>Friend challenges</span></div>
     <div class="modeSelector" id="challengeModeSelector">
-      <button class="modeCard" data-mode="challenge" style="width:auto; flex:1; flex-direction:row; gap:8px;">🎯<span>Create a Challenge</span></button>
+      <button class="modeCard" data-mode="challenge" style="width:auto; flex:1; flex-direction:row; gap:8px;"><span class="ico" data-icon="target"></span><span>Create a challenge</span></button>
     </div>
-    <p class="modeDesc" id="modeDesc">Classic — build combos, board fills up, game ends when you're stuck.</p>
-    <button class="btn secondary small" id="enterCodeLinkBtn" style="margin-bottom:12px;">🔑 Have a challenge code? Enter it</button>
+    <p class="modeDesc" id="modeDesc">Build combos. The board fills up, and the game ends when you're stuck.</p>
+    <button class="btn secondary small" id="enterCodeLinkBtn" style="margin-bottom:12px;"><span class="ico" data-icon="key"></span>Enter a challenge code</button>
     <div class="modalButtons">
-      <button class="btn" id="startModeBtn">▶ Start</button>
+      <button class="btn" id="startModeBtn"><span class="ico" data-icon="play"></span>Start</button>
       <button class="btn secondary" id="closeChooseModeBtn">Cancel</button>
     </div>
   </div>
@@ -2680,21 +2702,16 @@
 
     const bar = document.getElementById('rankProgressBar');
     const fill = document.getElementById('rankProgressFill');
-    const curEl = document.getElementById('rankProgressCurrent');
-    const nextEl = document.getElementById('rankProgressNext');
     const textEl = document.getElementById('rankProgressText');
     if(!bar) return;
     const idx = RANK_TIERS.findIndex(t=>t.name===rank.name);
     const next = RANK_TIERS[idx+1];
-    if(curEl) curEl.textContent = `${rank.icon} ${rank.name}`;
     if(!next){
       bar.classList.add('maxed');
-      if(nextEl) nextEl.textContent = '🏆 Max Rank';
       fill.style.width = '100%';
-      textEl.textContent = `${rankBest.toLocaleString()} — you've hit the top tier!`;
+      textEl.textContent = `${rankBest.toLocaleString()} — top tier`;
     } else {
       bar.classList.remove('maxed');
-      if(nextEl) nextEl.textContent = `${next.icon} ${next.name}`;
       const span = next.min - rank.min;
       const scoreProgress = span>0 ? Math.min(1, Math.max(0, (rankBest - rank.min)/span)) : 1;
       let progress = scoreProgress;
@@ -2881,6 +2898,31 @@
     chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
     crown: '<path d="M4 8l3.5 3.5L12 5l4.5 6.5L20 8l-1.5 10h-13z"/><path d="M5.5 18h13"/>',
+    // Chrome icons. Emoji render as different artwork on every device and read
+    // as a placeholder for art nobody drew — so anything that is interface
+    // rather than game content gets a stroke icon from this set instead.
+    play: '<path d="M8 5.5v13l11-6.5z"/>',
+    shuffle: '<path d="M3 7.5h3.4c1.5 0 2.9.7 3.8 2l3.6 5c.9 1.3 2.3 2 3.8 2H21"/><path d="M3 16.5h3.4c1.5 0 2.9-.7 3.8-2M13.8 9.5c.9-1.3 2.3-2 3.8-2H21"/><path d="M18.5 5L21 7.5 18.5 10M18.5 14l2.5 2.5-2.5 2.5"/>',
+    video: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/>',
+    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M17.5 12v3.5M20.5 12v2.5"/>',
+    gamepad: '<rect x="2.5" y="7.5" width="19" height="10" rx="4"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.8" r="1"/><circle cx="18.4" cy="14" r="1"/>',
+    timer: '<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.5l2.2 1.6M9.5 3h5"/>',
+    zen: '<path d="M19.5 4C10.4 4 4.5 9 4.5 15.2A5.3 5.3 0 0 0 14 18.6C18.2 15 19.5 9.7 19.5 4z"/><path d="M4.5 20c3-4.6 6.7-7.6 11.3-9.5"/>',
+    calendar: '<rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/>',
+    puzzle: '<path d="M11 5.4a2.2 2.2 0 1 1 4.4 0V7H19a1 1 0 0 1 1 1v3.4h-1.6a2.2 2.2 0 1 0 0 4.4H20V19a1 1 0 0 1-1 1H8.4a1 1 0 0 1-1-1v-3.2H5.8a2.2 2.2 0 1 1 0-4.4h1.6V8a1 1 0 0 1 1-1H11z"/>',
+    swords: '<path d="M4 4h3l8.5 8.5-3 3L4 7z"/><path d="M20 4h-3l-8.5 8.5 3 3L20 7z"/><path d="M14.5 15.5l4 4M9.5 15.5l-4 4"/>',
+    volume: '<path d="M5 9.5h3L12 6v12l-4-3.5H5z"/><path d="M16 9.8a3.2 3.2 0 0 1 0 4.4M18.4 7.4a6.6 6.6 0 0 1 0 9.2"/>',
+    music: '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+    vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9.5v5M2 11v2M19.5 9.5v5M22 11v2"/>',
+    pulse: '<path d="M2.5 12.5h4l2.5-6 3.5 12 2.5-7 2 3h4.5"/>',
+    burst: '<path d="M12 3.5v3.5M12 17v3.5M3.5 12h3.5M17 12h3.5"/><path d="M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.6"/>',
+    sparkle: '<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+    accessibility: '<circle cx="12" cy="5" r="1.8"/><path d="M5.5 9h13M12 9v5M12 14l-3 6.5M12 14l3 6.5"/>',
+    warning: '<path d="M12 4.2L21 19.5H3z"/><path d="M12 10v4M12 16.6v.2"/>',
+    pointer: '<path d="M9 11.5V5.2a1.7 1.7 0 1 1 3.4 0v5.1"/><path d="M12.4 10.6V9.2a1.6 1.6 0 1 1 3.2 0v1.6"/><path d="M15.6 10.9V10a1.6 1.6 0 1 1 3.2 0v5.2a5.5 5.5 0 0 1-5.5 5.5h-1.6a5 5 0 0 1-3.9-1.9L5 14.6a1.7 1.7 0 0 1 2.7-2.1L9 14"/>',
+    clipboard: '<rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/>',
+    wrench: '<path d="M15.5 3.5a5.5 5.5 0 0 0-5 7.8L3.8 18a2 2 0 0 0 2.8 2.8l6.7-6.7a5.5 5.5 0 0 0 6.9-7.2l-3 3-2.6-2.6 3-3a5.5 5.5 0 0 0-2.1-.8z"/>',
   };
   function iconMarkup(name){
     const body = ICON_SVGS[name];
@@ -4578,8 +4620,9 @@
     const hasSave = hasSavedGame();
     const playBtn = document.getElementById('playBtn');
     const newBtn = document.getElementById('newGameFromMenuBtn');
-    playBtn.textContent = hasSave ? '▶ CONTINUE' : '▶ PLAY';
-    newBtn.style.display = hasSave ? 'block' : 'none';
+    playBtn.innerHTML = `<span class="ico" data-icon="play"></span>${hasSave ? 'Continue' : 'Play'}`;
+    renderIcons(playBtn);
+    newBtn.style.display = hasSave ? 'inline-flex' : 'none';
   }
 
   function trayCellPx(maxDim){
