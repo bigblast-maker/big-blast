@@ -3830,10 +3830,10 @@
 
   function rewardText(reward){
     const parts = [];
-    if(reward.bomb) parts.push(`Bomb ×${reward.bomb}`);
-    if(reward.laser) parts.push(`Laser ×${reward.laser}`);
-    if(reward.gems) parts.push(`${reward.gems} gems`);
-    return parts.join('  ');
+    if(reward.bomb) parts.push(`${iconMarkup('bomb')}×${reward.bomb}`);
+    if(reward.laser) parts.push(`${iconMarkup('bolt')}×${reward.laser}`);
+    if(reward.gems) parts.push(`${iconMarkup('gem')}${reward.gems}`);
+    return parts.join('&nbsp;&nbsp;');
   }
   function grantReward(reward){
     if(reward.bomb) inventory.bomb += reward.bomb;
