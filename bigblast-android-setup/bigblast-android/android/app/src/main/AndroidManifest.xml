@@ -33,6 +33,17 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!--
+          AdMob requires this exact meta-data tag or the app crashes on launch.
+          This is GOOGLE'S OFFICIAL PUBLIC TEST APP ID (ca-app-pub-3940256099942544~3347511713),
+          documented at https://developers.google.com/admob/android/test-ads. It serves
+          only test ads and earns no real revenue. Before a real Play Store release, replace
+          this with YOUR OWN AdMob App ID from apps.admob.com (Apps > your app > App settings).
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
     </application>
 
     <!-- Permissions -->

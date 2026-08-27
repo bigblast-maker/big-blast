@@ -3610,21 +3610,103 @@
   }
   window.addEventListener('resize', ()=>{ if(gameScreen.style.display==='flex') fitBoard(); });
 
+  // ---------- Ads (AdMob via Capacitor) ----------
+  // No bundler in this project (single HTML file, no build step), so the
+  // plugin is reached through the bridge object Capacitor injects at runtime
+  // -- window.Capacitor.Plugins.AdMob -- rather than importing the npm
+  // package. That object only exists inside an actual native Android/iOS
+  // build; in a plain browser (dev, or this file opened directly)
+  // window.Capacitor is undefined, admobPlugin() returns null, and every ad
+  // call below falls through to the original simulated placeholder overlay
+  // unchanged. Ads can never block or gate core gameplay: offline, no fill,
+  // and "not running natively at all" all resolve as if the ad succeeded.
+  //
+  // AD_UNIT_IDS are Google's official PUBLIC TEST units (see
+  // https://developers.google.com/admob/android/test-ads) -- they always
+  // fill, always serve a real ad creative, and never earn real revenue.
+  // Swap these for your own AdMob console's ad unit IDs before a real
+  // release, alongside the APPLICATION_ID in AndroidManifest.xml.
+  //
+  // NOT implemented here: EEA/UK consent (Google's UMP SDK). Required by
+  // Google's policy before showing ads to EU/UK users in a real release --
+  // test ads don't need it, but flip this on before launching there for
+  // real. Track as a follow-up, not silently skipped.
+  const AD_UNIT_IDS = {
+    interstitial: 'ca-app-pub-3940256099942544/1033173712',
+    rewarded: 'ca-app-pub-3940256099942544/5224354917',
+  };
+  let admobReady = false;
+  function admobPlugin(){
+    const cap = window.Capacitor;
+    return (cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins && cap.Plugins.AdMob) || null;
+  }
+  (async function initAdsSdk(){
+    const AdMob = admobPlugin();
+    if(!AdMob) return; // plain browser -- nothing to initialize
+    try{ await AdMob.initialize({}); admobReady = true; }
+    catch(e){ console.warn('AdMob init failed', e); }
+  })();
+
+  // Resolves once the ad is fully dismissed, which the plugin's own docs say
+  // always fires exactly once regardless of outcome -- that (not the
+  // show*() promise, whose reject/resolve behavior on an early skip isn't
+  // clearly specified) is what tells us it's safe to move on. The timeout is
+  // pure insurance against a native-bridge edge case where Dismissed somehow
+  // never fires; it should never actually be hit.
+  async function playInterstitialAd(AdMob){
+    let dismissHandle = null;
+    const dismissed = new Promise(resolve=>{
+      AdMob.addListener('interstitialAdDismissed', resolve).then(h=>dismissHandle=h);
+    });
+    try{ await AdMob.prepareInterstitial({ adId: AD_UNIT_IDS.interstitial, isTesting: true }); }
+    catch(e){ if(dismissHandle && dismissHandle.remove) dismissHandle.remove(); return; }
+    AdMob.showInterstitial().catch(()=>{});
+    await Promise.race([dismissed, new Promise(r=>setTimeout(r,60000))]);
+    if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
+  }
+
+  // Returns 'reward' (watched to completion), 'declined' (closed early, no
+  // reward earned), or 'unavailable' (couldn't even load one -- no fill,
+  // offline, or init failed).
+  async function playRewardedAd(AdMob){
+    let rewardGranted = false, dismissHandle = null, rewardHandle = null;
+    const dismissed = new Promise(resolve=>{
+      AdMob.addListener('onRewardedVideoAdDismissed', resolve).then(h=>dismissHandle=h);
+    });
+    try{ rewardHandle = await AdMob.addListener('onRewardedVideoAdReward', ()=>{ rewardGranted = true; }); }catch(e){}
+    try{ await AdMob.prepareRewardVideoAd({ adId: AD_UNIT_IDS.rewarded, isTesting: true }); }
+    catch(e){
+      if(rewardHandle && rewardHandle.remove) rewardHandle.remove();
+      if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
+      return 'unavailable';
+    }
+    AdMob.showRewardVideoAd().catch(()=>{});
+    await Promise.race([dismissed, new Promise(r=>setTimeout(r,60000))]);
+    if(rewardHandle && rewardHandle.remove) rewardHandle.remove();
+    if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
+    return rewardGranted ? 'reward' : 'declined';
+  }
+
   function goToMenuWithAdPacing(){
     if(adsRemoved){ showScreen('menu'); return; }
     sessionsSinceAd++;
     if(sessionsSinceAd >= nextAdThreshold){
       sessionsSinceAd = 0;
       nextAdThreshold = randInt(2,4);
-      document.getElementById('adSimTitle').textContent = 'Advertisement';
-      document.getElementById('adSimSubtitle').textContent = 'This is a placeholder for a real interstitial ad SDK.';
-      openOverlay(adSimOverlay, null);
-      setTimeout(()=>{
-        closeOverlay(adSimOverlay);
-        document.getElementById('adSimTitle').textContent = 'Watching Ad…';
-        document.getElementById('adSimSubtitle').textContent = 'This is a placeholder. A real build calls a rewarded/interstitial ad SDK here.';
-        showScreen('menu');
-      }, 1800);
+      const AdMob = admobReady && admobPlugin();
+      if(AdMob){
+        playInterstitialAd(AdMob).then(()=> showScreen('menu'));
+      } else {
+        document.getElementById('adSimTitle').textContent = 'Advertisement';
+        document.getElementById('adSimSubtitle').textContent = 'This is a placeholder for a real interstitial ad SDK.';
+        openOverlay(adSimOverlay, null);
+        setTimeout(()=>{
+          closeOverlay(adSimOverlay);
+          document.getElementById('adSimTitle').textContent = 'Watching Ad…';
+          document.getElementById('adSimSubtitle').textContent = 'This is a placeholder. A real build calls a rewarded/interstitial ad SDK here.';
+          showScreen('menu');
+        }, 1800);
+      }
     } else {
       showScreen('menu');
     }
@@ -6162,15 +6244,9 @@
     }, (fullRows.length+fullCols.length>0 || piece.isBomb || piece.isLaser) ? 380 : 0);
   }
 
-  document.getElementById('watchAdStreakBtn').addEventListener('click', ()=>{
-    closeOverlay(streakReviveOverlay);
-    simulateAd(()=>{
-      noClearStreak = 0;
-      msgEl.textContent = `Combo saved at x${combo}!`;
-      finalizeTurn();
-    });
-  });
-  document.getElementById('declineStreakBtn').addEventListener('click', ()=>{
+  // Shared by the decline button and by a real rewarded ad the player closed
+  // early without earning the reward -- same outcome either way.
+  function declineStreakRevive(){
     closeOverlay(streakReviveOverlay);
     spawnComboLostPopup(combo);
     combo = 0;
@@ -6180,7 +6256,16 @@
     updateComboRiskVisual(0);
     msgEl.textContent = 'Combo reset.';
     finalizeTurn();
+  }
+  document.getElementById('watchAdStreakBtn').addEventListener('click', ()=>{
+    closeOverlay(streakReviveOverlay);
+    simulateAd(()=>{
+      noClearStreak = 0;
+      msgEl.textContent = `Combo saved at x${combo}!`;
+      finalizeTurn();
+    }, declineStreakRevive);
   });
+  document.getElementById('declineStreakBtn').addEventListener('click', declineStreakRevive);
 
   function updateDuelUI(){
     document.getElementById('duelP1Value').textContent = duelScores[0];
@@ -6224,8 +6309,20 @@
     }
   }
 
-  function simulateAd(onComplete){
+  // onDecline fires if a real rewarded ad was shown but closed early with no
+  // reward earned -- distinct from 'unavailable' (no fill/offline/browser
+  // dev), which still calls onComplete so a lack of ad inventory never costs
+  // the player their reward.
+  function simulateAd(onComplete, onDecline){
     if(adsRemoved){ onComplete(); return; }
+    const AdMob = admobReady && admobPlugin();
+    if(AdMob){
+      playRewardedAd(AdMob).then(result=>{
+        if(result==='declined'){ if(onDecline) onDecline(); }
+        else onComplete();
+      });
+      return;
+    }
     document.getElementById('adSimTitle').textContent = 'Watching Ad…';
     document.getElementById('adSimSubtitle').textContent = 'This is a placeholder. A real build calls a rewarded/interstitial ad SDK here.';
     openOverlay(adSimOverlay, null);
@@ -6539,12 +6636,18 @@
     checkGameOver();
   }
 
+  // Shared by "No, end game" and by a real rewarded ad closed early with no
+  // reward earned -- same outcome either way.
+  function declineGameOverRevive(){
+    closeOverlay(gameOverOverlay);
+    goToMenuWithAdPacing();
+  }
   document.getElementById('watchAdGameOverBtn').addEventListener('click', ()=>{
     closeOverlay(gameOverOverlay);
     simulateAd(()=>{
       gameOverReviveUsed = true;
       clearSpaceForRevive();
-    });
+    }, declineGameOverRevive);
   });
 
   document.getElementById('usePowerupGameOverBtn').addEventListener('click', ()=>{
@@ -6573,10 +6676,7 @@
     }
     haptic(12);
   });
-  document.getElementById('endGameBtn').addEventListener('click', ()=>{
-    closeOverlay(gameOverOverlay);
-    goToMenuWithAdPacing();
-  });
+  document.getElementById('endGameBtn').addEventListener('click', declineGameOverRevive);
 
   document.getElementById('duelRematchBtn').addEventListener('click', ()=>{
     closeOverlay(document.getElementById('duelOverOverlay'));

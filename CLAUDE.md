@@ -166,26 +166,66 @@ want them near where the thumb drags pieces.
 
 Done: gameplay, 7 modes, hold slot, 23 themes, ranks, economy, achievements,
 challenges, stats, score history, reduced-motion, SVG icons, responsive audit
-(7 sizes clean), legal pages, store assets.
+(7 sizes clean), legal pages, store assets, native Android project (builds
+successfully), real AdMob wiring (test IDs — see below).
 
 Not done / known open:
-- **Never tested on a real device.** All verification is headless Chromium.
+- **Never tested on a real device.** All verification is headless Chromium or
+  a local Gradle build; nothing has actually run on an Android phone/emulator
+  yet. Biggest remaining unknown in the project.
 - WebGL themes (Singularity/Supernova) run at ~half the frame rate of the rest
   of the game even after halving shader resolution. Unverified on real GPUs.
-- Ads are a placeholder (`adSimOverlay`), no real SDK. Adding AdMob changes
-  the privacy/Data Safety story completely.
+- **AdMob is wired but running on Google's public test ad unit IDs**, not
+  real ones — see `bigblast-android-setup/bigblast-android/SETUP_INSTRUCTIONS.md`
+  for the exact swap-in steps before a real release. EEA/UK consent (Google's
+  UMP SDK) is explicitly not implemented yet — required before serving ads to
+  EU/UK users for real, not needed for test ads.
+- **privacy-policy.html still says there's no advertising.** This is now
+  false the moment real (non-test) ads go live and must be rewritten before
+  that — Google checks Play Console's Data Safety declaration against actual
+  app behavior.
+- Real in-app purchases (Remove Ads, gem packs) are still fully simulated
+  (`simulatePayment()`) — a separate integration from AdMob, not done.
 - Dev console (tap title 7×) ships in the build. Decide deliberately.
 - Open design question: 23 themes may be breadth substituting for a point of
   view. Fewer, stronger themes might read as more authored.
 - Game-over screen is functional but not memorable (peak-end rule).
 
+## Building the Android app
+
+The native project already exists and is committed:
+`bigblast-android-setup/bigblast-android/android/`. To rebuild after changing
+big-blast.html:
+```bash
+cp big-blast.html bigblast-android-setup/bigblast-android/www/index.html
+cd bigblast-android-setup/bigblast-android
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+**Gradle needs `JAVA_HOME` pointed at a real JDK 17** — a JDK 17 got installed
+at `C:\Users\pleye\.jdks\jdk-17.0.20.1+1` for this. Do **not** point it at
+Android Studio's own bundled JBR (`Android Studio\jbr`) — as of Android
+Studio's late-2025+ releases that's JDK 25, and Gradle 8.2.1 (what Capacitor 6
+templates ship with) crashes on it with an opaque
+`Unsupported class file major version 69` error. The tempting fix — bumping
+Gradle/AGP to versions that run on JDK 25 — cascades into
+`@capacitor-community/admob@6.2.0`'s own Android build script using Gradle
+APIs removed entirely in Gradle 9, which only gets fixed by AdMob 8.x, which
+needs Capacitor 8. Pointing `JAVA_HOME` at a JDK 17 instead is a five-minute
+fix; the version-bump path is a multi-hour migration. Don't relitigate this
+without a real reason to.
+
 ## Next steps
 
-1. `npm install && npx cap add android && npx cap sync android`
-2. Set the package ID in `capacitor.config.json` — **permanent after first
-   publish**.
-3. Generate the signing keystore and **back it up**. Losing it means never
+1. **Get this running on a real device** — plug in an Android phone (USB
+   debugging on) or start an emulator, then `adb install` the debug APK from
+   `bigblast-android-setup/bigblast-android/android/app/build/outputs/apk/debug/`.
+2. Generate the signing keystore and **back it up**. Losing it means never
    updating the app under the same listing again.
-4. Fill placeholders in the legal pages, host them, put the URL in Play
-   Console.
-5. Real-device testing.
+3. Fill placeholders in the legal pages (`[DATE]`, `[DEVELOPER NAME]`,
+   `[CONTACT EMAIL]`), rewrite the ads-related claims once real AdMob IDs are
+   in, host them, put the URL in Play Console.
+4. Swap AdMob's test IDs for real ones (see SETUP_INSTRUCTIONS.md) once ready
+   to earn real revenue, and add UMP consent for EEA/UK before launching there.
+5. Retake the store-assets screenshots — the current ones predate the recent
+   design pass.
