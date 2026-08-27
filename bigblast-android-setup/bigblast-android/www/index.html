@@ -2149,7 +2149,13 @@
     trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4M9 20h6M10 17h4"/>',
     palette: '<path d="M12 4a8 8 0 0 0 0 16c1.1 0 1.7-.8 1.7-1.6 0-1.2-1-1.6-.5-2.5.4-.8 1.3-.6 2.3-.6A4.5 4.5 0 0 0 20 10.8C20 6.9 16.4 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
     cart: '<path d="M3 5h2l2.2 9.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.1L20 8H6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
-    bomb: '<circle cx="11" cy="15.5" r="5.5"/><path d="M11 10V7.6"/><path d="M11 7.6c0-1.8 1.5-3.1 3.2-3.1 1.2 0 2 .8 2 1.7"/><path d="M18.2 4.3l1 .9M20 7.4l1.3-.5"/>',
+    // A diagonal fuse (even with a spark burst redrawn onto the end of it)
+    // still reads as the Mars symbol at small sizes -- confirmed on a real
+    // device at 14px, twice, since the spark detail itself is too fine to
+    // survive that scale down and just vanishes, leaving circle+diagonal
+    // line. A vertical fuse has no diagonal for the eye to latch onto as an
+    // arrow, so it stays legible as "ball with a stick" all the way down.
+    bomb: '<circle cx="11" cy="14.5" r="6.5"/><path d="M11 8v-3.5"/><circle cx="11" cy="3.3" r="1.4" fill="currentColor"/>',
     bolt: '<path d="M13.5 3L6 13.5h5L10.5 21 18 10.5h-5z"/>',
     undo: '<path d="M4 8h9a5 5 0 0 1 0 10H8"/><path d="M7.5 4.5L4 8l3.5 3.5"/>',
     home: '<path d="M4 11l8-6.5 8 6.5"/><path d="M6.5 9.8V19a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.8"/><path d="M10 20v-5h4v5"/>',

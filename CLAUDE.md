@@ -83,6 +83,18 @@ hidden elements, so force-clicking "until the button is gone" can click
 through to whatever is underneath. Check `.classList.contains('show')`
 instead. Several "failures" have been the harness, not the game.
 
+**Icons that look fine at 40px can read as a completely different symbol at
+14px.** The `bomb` icon in `ICON_SVGS` — a circle with a diagonal fuse and a
+two-line spark — was checked on a contact sheet at 28–64px and looked like a
+bomb. In an actual reward chip at ~14px (only found by running on a real
+device, not headless Chromium) it read unambiguously as the Mars symbol (♂):
+the spark detail was too fine to survive the scale-down, leaving just
+circle+diagonal-line, which *is* that symbol. Fixed by making the fuse
+vertical instead of diagonal — no diagonal line means no arrow for the eye to
+find. **Check any new small icon at the actual size it ships at, not just on
+a big contact sheet — a shape that reads as intended at 40px can collide with
+an unrelated real-world symbol once shrunk.**
+
 ## Architecture notes
 
 - `trayPieces` is a 3-slot nullable array. `slotIndex` conventions:
@@ -170,9 +182,14 @@ challenges, stats, score history, reduced-motion, SVG icons, responsive audit
 successfully), real AdMob wiring (test IDs — see below).
 
 Not done / known open:
-- **Never tested on a real device.** All verification is headless Chromium or
-  a local Gradle build; nothing has actually run on an Android phone/emulator
-  yet. Biggest remaining unknown in the project.
+- **Run on an Android emulator for the first time, not yet a physical phone.**
+  A Pixel 6 / API 34 AVD (`BigBlastTest`) confirmed the app installs, boots,
+  and plays correctly — menu, mode picker, tutorial, live board, all
+  rendering right, no JS errors in logcat. Needed Windows Hypervisor Platform
+  enabled (`Enable-WindowsOptionalFeature -Online -FeatureName
+  HypervisorPlatform -All`, admin + restart) before the emulator could use
+  hardware acceleration. Real hardware — different GPU, different WebView
+  build, touch instead of a mouse — is still meaningfully untested.
 - WebGL themes (Singularity/Supernova) run at ~half the frame rate of the rest
   of the game even after halving shader resolution. Unverified on real GPUs.
 - **AdMob is wired but running on Google's public test ad unit IDs**, not
