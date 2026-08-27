@@ -2008,11 +2008,11 @@
 
     <div class="shopSectionTitle">Power-Ups</div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bomb"></span>Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area — added to your Inventory</div></div>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bomb"></span>Bomb ×1 <span id="shopBombOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a 3×3 area. Added to your inventory.</div></div>
       <button class="btn small secondary" id="buyBombGem">40<span class="ico" data-icon="gem"></span></button>
     </div>
     <div class="shopRow">
-      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bolt"></span>Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row & column — added to your Inventory</div></div>
+      <div class="shopInfo"><div class="shopTitle"><span class="ico" data-icon="bolt"></span>Laser ×1 <span id="shopLaserOwned" style="color:var(--muted); font-weight:600;"></span></div><div class="shopSub">Clears a full row and column. Added to your inventory.</div></div>
       <button class="btn small secondary" id="buyLaserGem">50<span class="ico" data-icon="gem"></span></button>
     </div>
 
@@ -4352,7 +4352,7 @@
       if(selected) btnHtml = `<button class="btn small secondary" disabled>✓ Selected</button>`;
       else if(owned) btnHtml = `<button class="btn small" data-skin="${skin.id}" data-action="select">Select</button>`;
       else if(isRankSkin) btnHtml = `<button class="btn small secondary" disabled>${iconMarkup('lock')}${skin.unlockRank}</button>`;
-      else btnHtml = `<button class="btn small secondary" data-skin="${skin.id}" data-action="buy" ${gems<skin.cost?'disabled':''}>${skin.cost}💎</button>`;
+      else btnHtml = `<button class="btn small secondary" data-skin="${skin.id}" data-action="buy" ${gems<skin.cost?'disabled':''}>${skin.cost}${iconMarkup('gem')}</button>`;
       card.innerHTML = `<button class="themeCardTryBtn" data-try="${skin.id}">${iconMarkup('eye')}</button><div class="themeCardSwatch">${swatchHtml}</div><div class="themeCardName">${skin.name}</div>${btnHtml}`;
       return card;
     }
