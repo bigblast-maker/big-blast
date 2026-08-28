@@ -264,7 +264,28 @@ without a real reason to.
    - https://bigblast-maker.github.io/big-blast/terms-of-service.html
 4. Swap AdMob's test IDs for real ones (see SETUP_INSTRUCTIONS.md) once ready
    to earn real revenue, and add UMP consent for EEA/UK before launching there.
-5. Retake the store-assets screenshots — the current ones predate the recent
-   design pass.
+5. ~~Retake the store-assets screenshots~~ — checked `bigblast-store-assets.tar.gz`
+   directly: all 5 (`screen-1-menu` through `screen-5-stats`) are already
+   1080×1920, already reflect the current design system (icons, colorful
+   pieces, glossy amber PLAY button), and share consistent stats across
+   screens — they were already current, this note was stale. Fixed a real
+   staleness in the same tarball while checking: `STORE-LISTING.md`'s full
+   description still claimed "Plays completely offline" / "no data
+   collected," which stopped being true the moment AdMob was wired in (same
+   category of bug the privacy-policy.html rewrite already fixed) — reworded
+   to match the privacy policy's actual framing.
+   Note for whoever captures screenshots on a *new* emulator profile in the
+   future: real `adb shell input touchscreen swipe` drags do work for this
+   game's pointer-event-based drag system — confirmed by instrumenting
+   `pointerdown`/`pointermove`/`pointerup`/`touchstart`/`touchmove`/`touchend`
+   listeners via CDP and watching them fire at the exact injected
+   coordinates, then confirming the piece was actually consumed and the board
+   updated. The physical→CSS-pixel mapping is an affine transform you can
+   calibrate with two `adb shell input tap` calibration points read back
+   through the same CDP listener: `physicalX ≈ cssX × devicePixelRatio`,
+   `physicalY ≈ cssY × devicePixelRatio + statusBarHeightPx`. If a drag ever
+   silently fails to register again, check event delivery with that listener
+   before suspecting coordinates — it isolates input-pipeline failures from
+   app-logic failures immediately.
 6. Real Play Billing integration (Remove Ads, gem packs) — still fully
    simulated, a separate task from AdMob.
