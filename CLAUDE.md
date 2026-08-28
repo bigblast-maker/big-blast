@@ -246,15 +246,20 @@ without a real reason to.
 
 ## Next steps
 
-1. **Get this running on a real device** — plug in an Android phone (USB
-   debugging on) or start an emulator, then `adb install` the debug APK from
-   `bigblast-android-setup/bigblast-android/android/app/build/outputs/apk/debug/`.
-2. Generate the signing keystore and **back it up**. Losing it means never
-   updating the app under the same listing again.
-3. Fill placeholders in the legal pages (`[DATE]`, `[DEVELOPER NAME]`,
-   `[CONTACT EMAIL]`), rewrite the ads-related claims once real AdMob IDs are
-   in, host them, put the URL in Play Console.
+1. ~~Get this running on a real device~~ — done, on a Pixel 6 / API 34
+   emulator. A physical phone (different GPU, real WebView build, touch
+   instead of mouse) is still untested.
+2. ~~Generate the signing keystore~~ — done, see SETUP_INSTRUCTIONS.md for
+   location/fingerprints. **Confirm it's actually backed up somewhere off
+   this machine** — that part only the user can do.
+3. ~~Fill legal page placeholders, rewrite ads claims~~ — done. Publisher is
+   "Bezaz Games", contact is `contact.bigblast@gmail.com` (make sure that
+   inbox actually gets created — it didn't exist as of this writing), governing
+   law is Hungary. **Still need to host these pages somewhere with a public
+   URL** and put that URL in Play Console — not done yet.
 4. Swap AdMob's test IDs for real ones (see SETUP_INSTRUCTIONS.md) once ready
    to earn real revenue, and add UMP consent for EEA/UK before launching there.
 5. Retake the store-assets screenshots — the current ones predate the recent
    design pass.
+6. Real Play Billing integration (Remove Ads, gem packs) — still fully
+   simulated, a separate task from AdMob.

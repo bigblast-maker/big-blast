@@ -105,23 +105,42 @@ This opens the project in Android Studio. From there:
 
 ### The signing key — the one truly irreversible step
 
-Android Studio will prompt you to create a new keystore the first time you
-generate a signed build. Whatever you do here:
+**Already generated** — `C:\Users\pleye\android-keystores\bigblast-release.jks`
+(deliberately outside this repo, not inside `bigblast-android-setup/` at all,
+so it can never accidentally get committed). RSA 2048, alias `bigblast`,
+valid until 2054.
 
-- **Back up the `.jks` file and its passwords somewhere safe** (password
-  manager, encrypted drive — not just your Desktop). If you lose it, you
-  cannot publish updates to this app ever again under the same listing —
-  Play Store would treat any future upload as a completely different app.
-- This is the one piece of this whole process I genuinely cannot do for you
-  or safely generate on your behalf — it has to be something only you hold.
+- Certificate SHA-1: `B0:71:D7:01:18:44:E7:0F:91:79:B8:D5:29:B4:9B:63:31:60:A7:10`
+- Certificate SHA-256: `ED:26:AB:87:B2:B9:D1:AC:B3:08:1B:CD:E7:03:1C:30:D2:60:25:4E:02:7E:90:9F:41:6D:92:BC:BB:78:A1:34`
+  (Google Play may ask for one of these fingerprints in various places —
+  keep this note somewhere findable, it saves re-running `keytool -list -v`.)
+
+**Back this file up right now, somewhere real** — a password manager's file
+attachment, an encrypted drive, cloud storage with 2FA. Not just this
+machine's Desktop. If it's lost, there is no recovery: you can never publish
+an update to this app under the same listing ever again, and Play Store
+would treat any future upload as a completely different app with zero
+install history. This is the one piece of this whole process that couldn't
+be done safely without a human holding the result — the actual password was
+given to you directly in chat when this was generated, not written to any
+file that gets committed.
+
+`android/keystore.properties` (gitignored, sitting next to this file) has
+the store path, alias, and both passwords in it already — `app/build.gradle`
+reads it automatically, so **`./gradlew bundleRelease` or `assembleRelease`
+just works**, no Android Studio signing dialog needed. If you ever set up
+this project on a different machine, recreate that file there (same format)
+pointing at wherever you restored the backed-up `.jks` to.
 
 ## After you have a signed AAB
 
-Upload it to Play Console → your app → Test and release → Testing → Closed
-testing. Since your developer account is exempt from the 14-day/12-tester
-requirement (created before Nov 13, 2023), you can also go straight to
-Production whenever you're ready — closed testing first is still a good idea,
-just no longer mandatory.
+The signed AAB is already sitting at
+`android/app/build/outputs/bundle/release/app-release.aab` — built and
+verified working. Upload it to Play Console → your app → Test and release →
+Testing → Closed testing. Since your developer account is exempt from the
+14-day/12-tester requirement (created before Nov 13, 2023), you can also go
+straight to Production whenever you're ready — closed testing first is still
+a good idea, just no longer mandatory.
 
 ## What I already fixed in the game file for this
 
