@@ -252,11 +252,16 @@ without a real reason to.
 2. ~~Generate the signing keystore~~ — done, see SETUP_INSTRUCTIONS.md for
    location/fingerprints. **Confirm it's actually backed up somewhere off
    this machine** — that part only the user can do.
-3. ~~Fill legal page placeholders, rewrite ads claims~~ — done. Publisher is
-   "Bezaz Games", contact is `contact.bigblast@gmail.com` (make sure that
-   inbox actually gets created — it didn't exist as of this writing), governing
-   law is Hungary. **Still need to host these pages somewhere with a public
-   URL** and put that URL in Play Console — not done yet.
+3. ~~Fill legal page placeholders, rewrite ads claims, host them~~ — done.
+   Publisher is "Bezaz Games", contact is `contact.bigblast@gmail.com`
+   (inbox confirmed created), governing law is Hungary. Hosted on GitHub
+   Pages, repo `github.com/bigblast-maker/big-blast`, serving from the
+   `design-pass` branch — note that means the whole repo root is public,
+   `big-blast.html` included (the actual game is playable at that URL).
+   Live at:
+   - https://bigblast-maker.github.io/big-blast/privacy-policy.html — **the
+     URL for Play Console's Privacy Policy field**
+   - https://bigblast-maker.github.io/big-blast/terms-of-service.html
 4. Swap AdMob's test IDs for real ones (see SETUP_INSTRUCTIONS.md) once ready
    to earn real revenue, and add UMP consent for EEA/UK before launching there.
 5. Retake the store-assets screenshots — the current ones predate the recent
