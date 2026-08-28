@@ -192,10 +192,22 @@ Not done / known open:
   build, touch instead of a mouse — is still meaningfully untested.
 - WebGL themes (Singularity/Supernova) run at ~half the frame rate of the rest
   of the game even after halving shader resolution. Unverified on real GPUs.
-- **AdMob is wired but running on Google's public test ad unit IDs**, not
-  real ones — see `bigblast-android-setup/bigblast-android/SETUP_INSTRUCTIONS.md`
-  for the exact swap-in steps before a real release. EEA/UK consent (Google's
-  UMP SDK) is explicitly not implemented yet — required before serving ads to
+- **AdMob is wired and confirmed working end-to-end on-device** — connected
+  Chrome DevTools directly to the running WebView (`adb forward` to the
+  `webview_devtools_remote_<pid>` socket) and triggered the real rewarded-ad
+  button; a genuine "Test Ad" video played, reward granted, cleanly dismissed.
+  Caught one real bug this way: `AdMob.addListener(...).then(...)` threw
+  `TypeError: ... .then is not a function` — the raw `Capacitor.Plugins.AdMob`
+  bridge (no npm wrapper, since this project has no bundler) doesn't return a
+  real thenable from `addListener()` the way the TS types imply, and the
+  failure was silently leaking listener handles (cleanup depended on a handle
+  the crashed `.then()` never assigned). Fixed by using `await` uniformly
+  instead of `.then()`/`.catch()` chaining, which handles both a real promise
+  and a plain return value safely. Still running Google's public test ad unit
+  IDs, not real ones — see
+  `bigblast-android-setup/bigblast-android/SETUP_INSTRUCTIONS.md` for the
+  exact swap-in steps before a real release. EEA/UK consent (Google's UMP
+  SDK) is explicitly not implemented yet — required before serving ads to
   EU/UK users for real, not needed for test ads.
 - **privacy-policy.html still says there's no advertising.** This is now
   false the moment real (non-test) ads go live and must be rewritten before

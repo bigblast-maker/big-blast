@@ -3660,13 +3660,21 @@
   // pure insurance against a native-bridge edge case where Dismissed somehow
   // never fires; it should never actually be hit.
   async function playInterstitialAd(AdMob){
+    // Confirmed on a real device: addListener()'s return value is NOT a real
+    // thenable when reached through the raw Capacitor.Plugins bridge (only
+    // the npm-wrapped API guarantees that) -- chaining .then() on it threw
+    // "AdMob.addListener(...).then is not a function" as an unhandled
+    // rejection, and silently left dismissHandle null forever (a listener
+    // leak, since cleanup below depends on having the handle). `await`
+    // sidesteps this entirely: it resolves a plain value immediately and a
+    // real promise normally, so it's safe either way.
     let dismissHandle = null;
-    const dismissed = new Promise(resolve=>{
-      AdMob.addListener('interstitialAdDismissed', resolve).then(h=>dismissHandle=h);
-    });
+    let resolveDismissed;
+    const dismissed = new Promise(resolve=>{ resolveDismissed = resolve; });
+    try{ dismissHandle = await AdMob.addListener('interstitialAdDismissed', ()=>resolveDismissed()); }catch(e){}
     try{ await AdMob.prepareInterstitial({ adId: AD_UNIT_IDS.interstitial, isTesting: true }); }
     catch(e){ if(dismissHandle && dismissHandle.remove) dismissHandle.remove(); return; }
-    AdMob.showInterstitial().catch(()=>{});
+    try{ await AdMob.showInterstitial(); }catch(e){}
     await Promise.race([dismissed, new Promise(r=>setTimeout(r,60000))]);
     if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
   }
@@ -3676,9 +3684,9 @@
   // offline, or init failed).
   async function playRewardedAd(AdMob){
     let rewardGranted = false, dismissHandle = null, rewardHandle = null;
-    const dismissed = new Promise(resolve=>{
-      AdMob.addListener('onRewardedVideoAdDismissed', resolve).then(h=>dismissHandle=h);
-    });
+    let resolveDismissed;
+    const dismissed = new Promise(resolve=>{ resolveDismissed = resolve; });
+    try{ dismissHandle = await AdMob.addListener('onRewardedVideoAdDismissed', ()=>resolveDismissed()); }catch(e){}
     try{ rewardHandle = await AdMob.addListener('onRewardedVideoAdReward', ()=>{ rewardGranted = true; }); }catch(e){}
     try{ await AdMob.prepareRewardVideoAd({ adId: AD_UNIT_IDS.rewarded, isTesting: true }); }
     catch(e){
@@ -3686,7 +3694,7 @@
       if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
       return 'unavailable';
     }
-    AdMob.showRewardVideoAd().catch(()=>{});
+    try{ await AdMob.showRewardVideoAd(); }catch(e){}
     await Promise.race([dismissed, new Promise(r=>setTimeout(r,60000))]);
     if(rewardHandle && rewardHandle.remove) rewardHandle.remove();
     if(dismissHandle && dismissHandle.remove) dismissHandle.remove();
